@@ -26,18 +26,18 @@ public class Relic {
     private Long apiId;
 
     @NotNull
-    @Column(name = "name", nullable = false)
+    @Column(name = "name", length = 30)
     private String name;
 
     @NotNull
-    @Column(name = "image", nullable = false)
+    @Column(name = "image", length = 300)
     private String image;
 
     @NotNull
-    @Column(name = "badge_image", nullable = false)
+    @Column(name = "badge_image", length = 300)
     private String badgeImage;
 
-    @Column(name = "location")
+    @Column(name = "location", length = 100)
     private String location;
 
     @NotNull
