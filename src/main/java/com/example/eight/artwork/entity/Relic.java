@@ -43,4 +43,16 @@ public class Relic {
     @NotNull
     @Column(name = "part_num", nullable = false, columnDefinition = "TINYINT UNSIGNED DEFAULT 0")
     private Integer partNum;
+
+    @Builder
+    public Relic(Long apiId, @NotNull String name, @NotNull String image, @NotNull String badgeImage,
+                 String location, @NotNull Integer partNum) {
+        this.apiId = apiId;
+        this.name = name;
+        this.image = image;
+        this.badgeImage = badgeImage;
+        this.location = location;
+        this.partNum = partNum;
+    }
+
 }
