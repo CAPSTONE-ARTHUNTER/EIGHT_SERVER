@@ -12,7 +12,7 @@ import java.util.stream.Stream;
 
 @Entity
 @Getter
-@Table(name = "Relic")
+@Table(name = "relic")
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Relic {
