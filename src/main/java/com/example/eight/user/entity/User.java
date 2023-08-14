@@ -37,5 +37,17 @@ public class User {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
+
+    @Builder
+    public User(String nickname, String email, double exp,
+                LocalDateTime createdAt, LocalDateTime updatedAt){
+        this.nickname = nickname;
+        this.email = email;
+        this.exp = exp;
+        this.createdAt = createdAt;
+        this.updatedAt = updatedAt;
+    }
+
+    // update 추가
 }
 
