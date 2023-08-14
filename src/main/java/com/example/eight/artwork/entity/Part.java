@@ -5,6 +5,8 @@ import lombok.*;
 import org.antlr.v4.runtime.misc.NotNull;
 
 import java.io.Serializable;
+import java.util.List;
+import java.util.ArrayList;
 
 @Entity
 @Getter
@@ -38,14 +40,19 @@ public class Part implements Serializable {
     @Column(name = "element_num", nullable = false, columnDefinition = "TINYINT UNSIGNED DEFAULT 0")
     private Integer elementNum;
 
+    @OneToMany(mappedBy = "part", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Element> elements = new ArrayList<>();
+
     @Builder
     public Part(Relic relic, @NotNull String name, @NotNull String textDescription, byte[] audioDescription,
-                @NotNull Integer elementNum) {
+                @NotNull Integer elementNum, List<Element> elements) {
         this.relic = relic;
         this.name = name;
         this.textDescription = textDescription;
         this.audioDescription = audioDescription;
         this.elementNum = elementNum;
+        this.elements = elements;
+
     }
 
 }
