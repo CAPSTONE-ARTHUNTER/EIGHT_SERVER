@@ -5,6 +5,9 @@ import lombok.*;
 import org.antlr.v4.runtime.misc.NotNull;
 import org.springframework.data.annotation.Id;
 
+import java.util.List;
+import java.util.ArrayList;
+
 @Entity
 @Getter
 @Table(name = "relic")
@@ -38,6 +41,9 @@ public class Relic {
     @NotNull
     @Column(name = "part_num", nullable = false, columnDefinition = "TINYINT UNSIGNED DEFAULT 0")
     private Integer partNum;
+
+    @OneToMany(mappedBy = "relic", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Part> parts = new ArrayList<>();
 
     @Builder
     public Relic(Long apiId, @NotNull String name, @NotNull String image, @NotNull String badgeImage,
