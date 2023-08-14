@@ -1,5 +1,6 @@
 package com.example.eight.user;
 
+import com.example.eight.user.entity.Role;
 import com.example.eight.user.entity.User;
 import org.junit.jupiter.api.Test;
 
@@ -18,6 +19,7 @@ public class UserTest {
         double exp = 3.7;
         LocalDateTime createdAt = LocalDateTime.of(2023, 8,14, 13, 30, 45);
         LocalDateTime updatedAt = LocalDateTime.now();
+        Role role = Role.USER;
 
         //when
         User user1 = User.builder()
@@ -25,7 +27,8 @@ public class UserTest {
                 .email(email)
                 .exp(exp)
                 .createdAt(createdAt)
-                .updatedAt(updatedAt).build();
+                .updatedAt(updatedAt)
+                .role(role).build();
 
         //then
         assertThat(user1.getNickname()).isEqualTo(nickname);
@@ -33,7 +36,6 @@ public class UserTest {
         assertThat(user1.getExp()).isEqualTo(exp);
         assertThat(user1.getCreatedAt()).isEqualTo(createdAt);
         assertThat(user1.getUpdatedAt()).isEqualTo(updatedAt);
-
-
+        assertThat(user1.getRole()).isEqualTo(role);
     }
 }
