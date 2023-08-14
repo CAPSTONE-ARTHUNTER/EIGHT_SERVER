@@ -1,15 +1,11 @@
 package com.example.eight.user.entity;
 
 
+import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Column;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 import java.time.LocalDateTime;
 
 
@@ -37,15 +33,21 @@ public class User {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Role role;
+
 
     @Builder
     public User(String nickname, String email, double exp,
-                LocalDateTime createdAt, LocalDateTime updatedAt){
+                LocalDateTime createdAt, LocalDateTime updatedAt,
+                Role role){
         this.nickname = nickname;
         this.email = email;
         this.exp = exp;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.role = role;
     }
 
     // update 추가
