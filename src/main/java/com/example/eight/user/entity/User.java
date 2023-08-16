@@ -62,7 +62,18 @@ public class User {
         this.updatedAt = updatedAt;
         this.role = role;
     }
+    // 유저 정보 업데이트하기
+    public User update(String name, String picture){
+        this.name = name;
+        this.picture = picture;
 
-    // update 추가
+        return this;
+    }
+
+    // 유저의 ROLE key 리턴하기
+    public String getRoleKey(){
+
+        return this.role.getKey();
+    }
 }
 
