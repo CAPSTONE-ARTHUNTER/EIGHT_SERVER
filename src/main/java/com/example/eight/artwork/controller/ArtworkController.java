@@ -19,7 +19,14 @@ public class ArtworkController{
     //요소 인식
     @PostMapping("/detection")
     public ResponseEntity<DetectionResponseDto> performDetection(@RequestBody DetectionRequestDto requestDto) {
-        DetectionResponseDto responseDto = artworkService.performDetection(requestDto);
+        DetectionResponseDto.DetectionData detectionData = artworkService.performDetection(requestDto);
+
+        DetectionResponseDto responseDto = DetectionResponseDto.builder()
+                .status("success")
+                .message("Object detection successful")
+                .data(detectionData)
+                .build();
+
         return ResponseEntity.ok(responseDto);
     }
 
