@@ -11,7 +11,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class DetectionRequest {
+public class DetectionRequestDto {
     private double time;
     private ImageInfo image;
     private List<Prediction> predictions;
