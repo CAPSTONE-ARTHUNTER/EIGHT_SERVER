@@ -18,11 +18,17 @@ public class User {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @Column(nullable = false)
+    private String name;
+
     @Column(nullable = false, length = 30)
     private String nickname;
 
     @Column(nullable = false, length = 30)
     private String email;
+
+    @Column
+    private String picture;
 
     @Column(nullable = false, columnDefinition = "DECIMAL(10.1) default 0.0 ")
     private double exp;
@@ -39,12 +45,14 @@ public class User {
 
 
     @Builder
-    public User(String nickname, String email, double exp,
+    public User(String name, String nickname, String email, double exp, String picture,
                 LocalDateTime createdAt, LocalDateTime updatedAt,
                 Role role){
+        this.name = name;
         this.nickname = nickname;
         this.email = email;
         this.exp = exp;
+        this.picture = picture;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.role = role;
