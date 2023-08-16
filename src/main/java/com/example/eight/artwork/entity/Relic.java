@@ -3,7 +3,6 @@ package com.example.eight.artwork.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.antlr.v4.runtime.misc.NotNull;
-import org.springframework.data.annotation.Id;
 
 import java.util.List;
 import java.util.ArrayList;
