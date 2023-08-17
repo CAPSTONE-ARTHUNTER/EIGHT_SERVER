@@ -22,12 +22,16 @@ public class ArtworkService {
         // 클라이언트로부터 받은 요청으로 작품 부분에 해당하는 요소(element)를 검증
         Element detectedElement = validateAndRecordElement(requestDto);
 
-        return DetectionResponseDto.DetectionData.builder()
-                .image(detectedElement.getImage())
-                .name(detectedElement.getName())
-                .build();
+        // null 여부 확인
+        if (detectedElement != null) {
+            return DetectionResponseDto.DetectionData.builder()
+                    .image(detectedElement.getImage())
+                    .name(detectedElement.getName())
+                    .build();
+        } else {
+            return null;
+        }
     }
-
     private Element validateAndRecordElement(DetectionRequestDto requestDto) {
         String elementClassName = requestDto.getPredictions().get(0).getElementClassName();
         Element element = artworkRepository.findElementByClassName(elementClassName);
