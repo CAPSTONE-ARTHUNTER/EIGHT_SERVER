@@ -33,6 +33,9 @@ public class DetectionRequestDto {
         private double width;
         private double height;
         private double confidence;
+
+        //class는 예약어로 변수명 변경
+        @JsonProperty("class")
         private String elementClassName;
     }
 }
