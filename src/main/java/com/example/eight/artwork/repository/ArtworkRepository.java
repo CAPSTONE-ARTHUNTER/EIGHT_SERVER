@@ -7,12 +7,13 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
-
+import java.util.Optional;
 @Repository
 public interface ArtworkRepository extends JpaRepository<Element, Long> {
-    @Query("SELECT e FROM Element e WHERE e.name = :elementClassName")
-    Element findElementByClassName(String elementClassName);
+    @Query("SELECT e FROM Element e WHERE e.name = :name")
+    Element findByName(String name);
 
     @Query("INSERT INTO SolvedElement(element, isSolved, solvedAt) VALUES (:element, :isSolved, :solvedAt)")
     void saveSolvedElement(@Param("element") Element element, @Param("isSolved") boolean isSolved, @Param("solvedAt") LocalDateTime solvedAt);
 }
+

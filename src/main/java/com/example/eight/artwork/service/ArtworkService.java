@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 @Transactional
@@ -18,11 +19,11 @@ public class ArtworkService {
 
     private final ArtworkRepository artworkRepository;
 
+
+    // 클라이언트로부터 받은 요청으로 작품 부분에 해당하는 요소(element)를 검증
     public DetectionResponseDto.DetectionData performDetection(DetectionRequestDto requestDto) {
-        // 클라이언트로부터 받은 요청으로 작품 부분에 해당하는 요소(element)를 검증
         Element detectedElement = validateAndRecordElement(requestDto);
 
-        // null 여부 확인
         if (detectedElement != null) {
             return DetectionResponseDto.DetectionData.builder()
                     .image(detectedElement.getImage())
@@ -33,8 +34,8 @@ public class ArtworkService {
         }
     }
     private Element validateAndRecordElement(DetectionRequestDto requestDto) {
-        String elementClassName = requestDto.getPredictions().get(0).getElementClassName();
-        Element element = artworkRepository.findElementByClassName(elementClassName);
+        String elementName = requestDto.getName();
+        Element element = artworkRepository.findByName(elementName);
 
         if (element != null) {
             saveSolvedElement(element);
