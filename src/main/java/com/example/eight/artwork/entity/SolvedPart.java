@@ -1,5 +1,6 @@
 package com.example.eight.artwork.entity;
 
+import com.example.eight.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -28,21 +29,19 @@ public class SolvedPart implements Serializable {
     @Column(name = "solved_element_num", nullable = false)
     private int solvedElementNum;
 
-    // TODO: user 엔티티 생성 후 주석 해제
-    // @ManyToOne(fetch = FetchType.LAZY)
-    // @JoinColumn(name = "user_id", nullable = false)
-    // private User user;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    private User user;
 
     @Column(name = "solved_at")
     private LocalDateTime solvedAt;
 
-    // TODO: user 엔티티 생성 후 추가
     @Builder
-    public SolvedPart(Part part, boolean isSolved, int solvedElementNum, LocalDateTime solvedAt) {
+    public SolvedPart(Part part, boolean isSolved, int solvedElementNum, User user, LocalDateTime solvedAt) {
         this.part = part;
         this.isSolved = isSolved;
         this.solvedElementNum = solvedElementNum;
-        // this.user = user;
+        this.user = user;
         this.solvedAt = solvedAt;
     }
 
