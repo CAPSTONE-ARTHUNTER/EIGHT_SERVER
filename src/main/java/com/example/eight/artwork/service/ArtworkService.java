@@ -5,6 +5,8 @@ import com.example.eight.artwork.dto.DetectionResponseDto;
 import com.example.eight.artwork.entity.Element;
 import com.example.eight.artwork.entity.SolvedElement;
 import com.example.eight.artwork.repository.ArtworkRepository;
+import com.example.eight.artwork.repository.SolvedElementRepository;
+
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,7 +20,7 @@ import java.util.Optional;
 public class ArtworkService {
 
     private final ArtworkRepository artworkRepository;
-
+    private final SolvedElementRepository solvedElementRepository;
 
     // 클라이언트로부터 받은 요청으로 작품 부분에 해당하는 요소(element)를 검증
     public DetectionResponseDto.DetectionData performDetection(DetectionRequestDto requestDto) {
@@ -50,7 +52,7 @@ public class ArtworkService {
                 .isSolved(true)
                 .solvedAt(LocalDateTime.now())
                 .build();
-        artworkRepository.saveSolvedElement(solvedElement.getElement(), solvedElement.isSolved(), solvedElement.getSolvedAt());
+        solvedElementRepository.save(solvedElement);
     }
 
 }
