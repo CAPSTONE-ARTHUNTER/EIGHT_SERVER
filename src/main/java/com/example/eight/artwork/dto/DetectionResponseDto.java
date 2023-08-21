@@ -17,10 +17,10 @@ public class DetectionResponseDto {
         private String image;
         private String name;
 
-        public static DetectionData createFromRequest(DetectionRequestDto requestDto) {
+        public static DetectionData createFromRequest(DetectionRequestDto requestDto, String imageUrl) {
             return DetectionData.builder()
-                    .image(requestDto.getImage().toString())  // 요소 이미지 URL
-                    .name(requestDto.getPredictions().get(0).getElementClassName())  // 요소 이름(class)
+                    .image(imageUrl)  // 요소 이미지 URL
+                    .name(requestDto.getName())  // 요소 이름(class)
                     .build();
         }
     }

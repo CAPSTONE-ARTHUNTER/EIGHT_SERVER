@@ -12,7 +12,7 @@ import java.util.List;
 public class DetectionRequestDto {
     private String name;
 
-    public DetectionResponseDto.DetectionData getData() {
-        return DetectionResponseDto.DetectionData.createFromRequest(this);
-    }
+    //public DetectionResponseDto.DetectionData getData() {
+    //    return DetectionResponseDto.DetectionData.createFromRequest(this);
+    //}
 }
