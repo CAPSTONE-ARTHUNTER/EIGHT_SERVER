@@ -98,11 +98,15 @@ public class ArtworkService {
             partInfoDtos.add(partInfoDto);  // 변환된 부분 정보 리스트에 추가
         }
 
+        // 획득한 부분 개수
+        int totalSolvedPartCount = (int) partInfoDtos.stream().filter(PartInfoDto::isSolved).count();
+
         PartsResponseDto responseDto = PartsResponseDto.builder()
                 .relicName(relic.getName())
                 .relicImage(relic.getImage())
                 .partInfos(partInfoDtos)
                 .totalPartCount(parts.size())
+                .totalSolvedPartCount(totalSolvedPartCount)
                 .build();
 
         return responseDto;  // 최종 응답 객체

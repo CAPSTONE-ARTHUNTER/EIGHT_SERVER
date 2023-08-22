@@ -13,4 +13,6 @@ public class PartsResponseDto {
     private String relicImage;
     private List<PartInfoDto> partInfos;
     private int totalPartCount;
+    private int totalSolvedPartCount;
+
 }
