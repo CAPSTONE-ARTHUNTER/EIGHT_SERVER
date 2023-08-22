@@ -2,13 +2,12 @@ package com.example.eight.artwork.controller;
 
 import com.example.eight.artwork.dto.DetectionRequestDto;
 import com.example.eight.artwork.dto.DetectionResponseDto;
+import com.example.eight.artwork.dto.PartsResponseDto;
 import com.example.eight.artwork.service.ArtworkService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
 @AllArgsConstructor
@@ -27,6 +26,12 @@ public class ArtworkController{
                 .data(detectionData)
                 .build();
 
+        return ResponseEntity.ok(responseDto);
+    }
+
+    @GetMapping("/parts")
+    public ResponseEntity<PartsResponseDto> getArtworkParts(@RequestParam Long id) {
+        PartsResponseDto responseDto = artworkService.getArtworkParts(id);
         return ResponseEntity.ok(responseDto);
     }
 
