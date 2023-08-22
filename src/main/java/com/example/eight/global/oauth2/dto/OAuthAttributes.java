@@ -1,4 +1,4 @@
-package com.example.eight.user.config.auth.dto;
+package com.example.eight.global.oauth2.dto;
 
 import com.example.eight.user.entity.Role;
 import com.example.eight.user.entity.User;

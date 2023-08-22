@@ -1,5 +1,6 @@
-package com.example.eight.user.config.auth;
+package com.example.eight.global.config;
 
+import com.example.eight.global.oauth2.service.CustomOAuth2UserService;
 import com.example.eight.user.entity.Role;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -27,17 +28,18 @@ public class SecurityConfig {
                 // URL별 권한 설정
                 .authorizeHttpRequests(Requests ->
                         Requests
-                                // 다음 URL은 인증 없어도 모두가 접근 가능 (수정 예정)
+                                // 다음 URL은 인증 없어도 모두가 접근 가능 TODO: (수정 예정)
                                 .requestMatchers(
                                         "/",
                                         "/css/**",
                                         "/image/**",
                                         "/js/**").permitAll()
-                                // 다음 URL은 role이 USER여야 가능 (수정 예정)
+                                // 다음 URL은 role이 USER여야 가능 TODO: (수정 예정)
                                 .requestMatchers(
-                                        "/api/v1/**").hasRole(Role.USER.name())
+                                        "/users/**").hasRole(Role.USER.name())
                                 // 나머지 URL은 인증 필요
                                 .anyRequest().authenticated()
+
                 );
 
         httpSecurity

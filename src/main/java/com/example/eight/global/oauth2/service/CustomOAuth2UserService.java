@@ -1,7 +1,6 @@
-package com.example.eight.user.config.auth;
+package com.example.eight.global.oauth2.service;
 
-import com.example.eight.user.config.auth.dto.OAuthAttributes;
-import com.example.eight.user.config.auth.dto.SessionUser;
+import com.example.eight.global.oauth2.dto.OAuthAttributes;
 import com.example.eight.user.entity.User;
 import com.example.eight.user.repository.UserRepository;
 import jakarta.servlet.http.HttpSession;
