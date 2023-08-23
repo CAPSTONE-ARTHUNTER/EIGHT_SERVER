@@ -1,6 +1,7 @@
 package com.example.eight.global.oauth2.dto;
 
-import com.example.eight.user.entity.Role;
+import com.example.eight.user.SocialType;
+import com.example.eight.user.Role;
 import com.example.eight.user.entity.User;
 import lombok.Builder;
 import lombok.Getter;
@@ -32,9 +33,8 @@ public class OAuthAttributes {
     /*
     of() : OAuth2 provider 별로 유저 정보 가져오기
      */
-    public static OAuthAttributes of(String registraionId,
-                                     String userNameAttributeName,
-                                     Map<String, Object> attributes){
+    public static OAuthAttributes of(SocialType socialType,
+                                     String userNameAttributeName, Map<String, Object> attributes){
         // 구글 OAuth의 유저 정보 리턴
         return ofGoogle(userNameAttributeName, attributes);
     }
@@ -42,8 +42,7 @@ public class OAuthAttributes {
     /*
     ofGoogle() : 구글 OAuth의 유저 정보 가져오기
      */
-    public static OAuthAttributes ofGoogle(String userNameAttributeName,
-                                     Map<String, Object> attributes){
+    public static OAuthAttributes ofGoogle(String userNameAttributeName, Map<String, Object> attributes){
         return OAuthAttributes.builder()
                 .name((String) attributes.get("name"))
                 .email((String) attributes.get("email"))
@@ -56,7 +55,7 @@ public class OAuthAttributes {
     /*
     User 엔티티 생성 (최초 가입시)
      */
-    public User toEntity(){
+    public User toEntity(SocialType socialType){
 
         return User.builder()
                 .name(name)
