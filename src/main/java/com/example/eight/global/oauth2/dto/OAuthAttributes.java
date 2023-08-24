@@ -61,7 +61,7 @@ public class OAuthAttributes {
                 .name(name)
                 .email(email)
                 .picture(picture)
-                .role(Role.GUEST)   // 최초 가입시 role은 GUEST
+                .role(Role.USER)   // TODO: 일단 USER로 설정
                 .build();
     }
 }
