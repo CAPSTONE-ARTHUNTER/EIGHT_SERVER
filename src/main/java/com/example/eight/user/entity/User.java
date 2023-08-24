@@ -83,5 +83,14 @@ public class User {
     public String getRoleKey(){
         return this.role.getKey();
     }
+
+    public String getEmail(){
+        return this.email;
+    }
+
+    // refresh 토큰 업데이트 메소드
+    public void updateRefreshToken(String updateRefreshToken) {
+        this.refreshToken = updateRefreshToken;
+    }
 }
 
