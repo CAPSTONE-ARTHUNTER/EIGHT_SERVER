@@ -2,6 +2,7 @@ package com.example.eight.global.jwt;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.example.eight.user.repository.UserRepository;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -10,11 +11,12 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 @Getter
+@Slf4j
 public class JwtService {
+
     /*
      application.properties의 프로퍼티 주입
       */
@@ -26,6 +28,8 @@ public class JwtService {
 
     @Value("${jwt.refresh.expiration}")
     private Long refreshTokenExpiration;
+
+    private final UserRepository userRepository;
 
 
     /*
@@ -53,4 +57,14 @@ public class JwtService {
                 .sign(Algorithm.HMAC512(secretKey));    // HMAC512 알고리즘 사용 ( refresh token은 claim 없음)
     }
 
+    /*
+     RefreshToken을 DB에 저장/업데이트
+     */
+    public void saveRefreshToken(String email, String refreshToken) {
+        userRepository.findByEmail(email)
+                .ifPresentOrElse(
+                        user -> user.updateRefreshToken(refreshToken),
+                        () -> new Exception("해당 유저가 없음")
+                );
+    }
 }
