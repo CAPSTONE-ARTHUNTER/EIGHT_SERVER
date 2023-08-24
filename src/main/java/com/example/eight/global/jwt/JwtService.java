@@ -3,6 +3,7 @@ package com.example.eight.global.jwt;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.example.eight.user.repository.UserRepository;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,6 +31,12 @@ public class JwtService {
     private Long refreshTokenExpiration;
 
     private final UserRepository userRepository;
+
+    @Value("${jwt.access.header}")
+    private String accessHeader;    // Authorization
+
+    @Value("${jwt.refresh.header}")
+    private String refreshHeader;   // Authorization-refresh
 
 
     /*
@@ -66,5 +73,16 @@ public class JwtService {
                         user -> user.updateRefreshToken(refreshToken),
                         () -> new Exception("해당 유저가 없음")
                 );
+    }
+
+    /*
+ AccessToken과 RefreshToken을 헤더로 보내기
+ */
+    public void sendTokens(HttpServletResponse response, String accessToken, String refreshToken) {
+        response.setStatus(HttpServletResponse.SC_OK);
+
+        response.setHeader(accessHeader, accessToken);      // Acess Token을 헤더에 싣기
+        response.setHeader(refreshHeader, refreshToken);    // Refresh Token을 헤더에 싣기
+        log.info("Access Token 및 Refresh Token 헤더로 설정 완료");
     }
 }
