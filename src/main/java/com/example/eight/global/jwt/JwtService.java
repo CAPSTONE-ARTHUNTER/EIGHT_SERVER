@@ -2,6 +2,7 @@ package com.example.eight.global.jwt;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import com.example.eight.user.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -98,7 +99,7 @@ public class JwtService {
             case "accessToken" -> header = accessHeader;
             case "refreshToken" -> header = refreshHeader;
             default -> {
-                log.info("유효하지 않습니다.'accessToken' 혹은 'refreshToken'을 입력하세요");
+                log.info("인자로 'accessToken', 'refreshToken' 중 하나를 입력하세요");
                 return Optional.empty();
             }
         }
@@ -107,5 +108,18 @@ public class JwtService {
         return Optional.ofNullable(request.getHeader(header))
                 .filter(token -> token.startsWith("Bearer "))
                 .map(token -> token.replace("Bearer ", ""));    // 헤더에서 "Bearer" 삭제해서 토큰만 가져오기
+    }
+
+    /*
+     * Token 유효성 검사
+     */
+    public boolean validateToken(String token) {
+        try {
+            JWT.require(Algorithm.HMAC512(secretKey)).build().verify(token);
+            return true;
+        } catch (Exception e) {
+            log.error("유효하지 않은 토큰 : {}", e.getMessage());
+            return false;
+        }
     }
 }
