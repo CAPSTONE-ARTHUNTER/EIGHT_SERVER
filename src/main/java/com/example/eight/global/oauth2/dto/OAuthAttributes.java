@@ -51,17 +51,4 @@ public class OAuthAttributes {
                 .nameAttributeKey(userNameAttributeName)
                 .build();
     }
-
-    /*
-    User 엔티티 생성 (최초 가입시)
-     */
-    public User toEntity(SocialType socialType){
-
-        return User.builder()
-                .name(name)
-                .email(email)
-                .picture(picture)
-                .role(Role.USER)   // TODO: 일단 USER로 설정
-                .build();
-    }
 }

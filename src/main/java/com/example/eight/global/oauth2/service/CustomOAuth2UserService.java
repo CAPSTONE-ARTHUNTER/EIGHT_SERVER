@@ -1,10 +1,10 @@
 package com.example.eight.global.oauth2.service;
 
 import com.example.eight.global.oauth2.dto.OAuthAttributes;
+import com.example.eight.user.Role;
 import com.example.eight.user.SocialType;
 import com.example.eight.user.entity.User;
 import com.example.eight.user.repository.UserRepository;
-import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +18,7 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Service;
 
 import java.util.Collections;
+import java.util.Optional;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -51,8 +52,8 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         OAuthAttributes attributes = OAuthAttributes.of(socialType, userNameAttributeName,
                 oAuth2User.getAttributes());
 
-        // User 엔티티에 저장
-        User user = saveOrUpdate(attributes, socialType);       // 아래에서 정의한 saveOrUpdate 메소드
+        // 해당 User가 이미 DB에 있다면 Update, 업다면 새로 Create
+        User user = createOrUpdateUser(attributes, socialType);
 
 
         // OAuth2User 리턴
@@ -72,15 +73,40 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
             return null;
         }
     }
+
+    /*
+    User 생성 (최초 가입시)
+    */
+    public User createUser(OAuthAttributes attributes, SocialType socialType){
+
+        return User.builder()
+                .name(attributes.getName())
+                .email(attributes.getEmail())
+                .picture(attributes.getPicture())
+                .role(Role.USER)   // TODO: 일단 USER로 설정
+                .build();
+    }
+
     /*
     User 엔티티에
     유저의 attributes 저장/업데이트 하기
      */
-    private User saveOrUpdate(OAuthAttributes attributes, SocialType socialType){
-        User user = userRepository.findByEmail(attributes.getEmail())
-                .map(entity -> entity.update(attributes.getName(),
-                        attributes.getPicture()))
-                .orElse(attributes.toEntity(socialType));
+    private User createOrUpdateUser(OAuthAttributes attributes, SocialType socialType) {
+        String email = attributes.getEmail();
+        Optional<User> userOptional = userRepository.findByEmail(email);
+        User user;
+
+        // 해당 유저가 이미 로그인한 적이 있다면 정보만 업데이트
+        if (userOptional.isPresent()) {
+            user = userOptional.get();
+            log.info("기존에 DB에 저장된 유저입니다. 이메일: {} ", email);
+            user.update(attributes.getName(), attributes.getPicture());
+        }
+        // 최초 로그인이라면 User 생성
+        else {
+            log.info("DB에 유저를 새로 저장합니다. 이메일: {}", email);
+            user = createUser(attributes, socialType);
+        }
 
         return userRepository.save(user);
     }
