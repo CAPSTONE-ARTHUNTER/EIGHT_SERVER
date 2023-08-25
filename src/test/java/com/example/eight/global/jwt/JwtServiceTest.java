@@ -1,6 +1,7 @@
 package com.example.eight.global.jwt;
 
 import com.auth0.jwt.JWT;
+import com.auth0.jwt.algorithms.Algorithm;
 import com.example.eight.user.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +14,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 
+import java.util.Date;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.*;
@@ -95,6 +97,40 @@ public class JwtServiceTest {
         assertThat(accessToken.get()).isEqualTo(샘플토큰);
         assertThat(refreshToken.get()).isEqualTo(샘플토큰);
         assertThat(invalidToken).isEmpty();
+    }
+
+    @DisplayName("유효성 검사 - 유효한 토큰일 때")
+    @Test
+    public void testValidateToken_Valid() {
+        //given
+        String token = JWT.create().sign(Algorithm.HMAC512("sampleSecretKeyForTest"));
+
+        // when
+        boolean isValid = jwtService.validateToken(token);
+
+        //then
+        assertThat(isValid).isTrue();
+        log.info(token);
+    }
+
+    @DisplayName("유효성 검사 - 유효하지 않은 토큰일 때")
+    @Test
+    public void testValidateToken_InValid() {
+        //given
+        // 1. secret key가 맞지 않을 때
+        String token = JWT.create().sign(Algorithm.HMAC512("invalid SecretKey"));
+        // 2. 만료되었을 때
+        Date 만료된_시간 = new Date(System.currentTimeMillis() - 100); // 이미 만료된 시간
+        String 만료된_토큰 = JWT.create().withExpiresAt(만료된_시간)
+                .sign(Algorithm.HMAC512("sampleSecretKeyForTest"));
+
+        // when
+        boolean isValidKey = jwtService.validateToken(token);
+        boolean isValidTime = jwtService.validateToken(만료된_토큰);
+
+        //then
+        assertThat(isValidKey).isFalse();
+        assertThat(isValidTime).isFalse();
     }
 }
 
