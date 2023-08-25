@@ -2,6 +2,7 @@ package com.example.eight.global.jwt;
 
 import com.auth0.jwt.JWT;
 import com.example.eight.user.repository.UserRepository;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -12,7 +13,11 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 
+import java.util.Optional;
+
 import static org.assertj.core.api.Assertions.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @SpringBootTest
 @Slf4j
@@ -70,6 +75,26 @@ public class JwtServiceTest {
         // 1. refreshToken이 비어있지 않은지 검증
         assertThat(refreshToken).isNotBlank();
         log.info("발급된 refreshToken: "+ refreshToken);
+    }
+
+    @DisplayName("request 헤더에서 토큰 추출")
+    @Test
+    public void testGetToken(){
+        //given
+        String 샘플토큰 = "테스트용Token";
+        HttpServletRequest request = mock(HttpServletRequest.class);
+        when(request.getHeader("Authorization")).thenReturn("Bearer "+샘플토큰);
+        when(request.getHeader("Authorization-refresh")).thenReturn("Bearer "+샘플토큰);
+
+        //when
+        Optional<String> accessToken = jwtService.getToken(request, "accessToken");
+        Optional<String> refreshToken = jwtService.getToken(request, "refreshToken");
+        Optional<String> invalidToken = jwtService.getToken(request, "유효하지 않은 파라미터");
+
+        //then
+        assertThat(accessToken.get()).isEqualTo(샘플토큰);
+        assertThat(refreshToken.get()).isEqualTo(샘플토큰);
+        assertThat(invalidToken).isEmpty();
     }
 }
 
