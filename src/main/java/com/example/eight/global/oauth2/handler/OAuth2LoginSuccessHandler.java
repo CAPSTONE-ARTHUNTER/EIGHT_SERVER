@@ -29,12 +29,12 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
-        log.info("OAuth2LoginSuccessHandler 실행");
+        log.info("소셜 로그인 완료! OAuth2LoginSuccessHandler 실행");
         try {
             // 로그인한 유저의 정보 가져오기
-            DefaultOAuth2User defaultOAuth2User = (DefaultOAuth2User) authentication.getPrincipal();
-            //log.info("authentication.getPrincipal(): "+ authentication.getPrincipal());
-            Map<String, Object> attributes = defaultOAuth2User.getAttributes();
+            DefaultOAuth2User OAuth2User = (DefaultOAuth2User) authentication.getPrincipal();
+            Map<String, Object> attributes = OAuth2User.getAttributes();
+            log.info("소셜 로그인 한 OAuth2User: {}", OAuth2User);
 
             // 해당 유저의 토큰 생성 TODO: 일단 GUEST로 하고, 추가 유저 정보 입력하면(nickname) USER로 바꾸기
             log.info("USER 이므로 로그인 성공! 토큰 생성");
