@@ -43,6 +43,9 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
                 = userRequest.getClientRegistration().getProviderDetails().getUserInfoEndpoint().getUserNameAttributeName();
         SocialType socialType
                 = getSocialType(registrationId);
+        log.info("registration Id: {}", registrationId);                // google
+        log.info("userNameAttributeName: {}", userNameAttributeName);   // sub
+        log.info("socialType: {}", socialType);                         // GOOGLE
 
         // oAuth2User의 정보 attributes에 저장 (dto 클래스인 OAuthAttributes)
         OAuthAttributes attributes = OAuthAttributes.of(socialType, userNameAttributeName,
