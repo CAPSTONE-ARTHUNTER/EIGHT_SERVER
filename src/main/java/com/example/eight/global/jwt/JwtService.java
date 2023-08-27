@@ -122,4 +122,19 @@ public class JwtService {
             return false;
         }
     }
+
+    /*
+     * AccessToken에서 Claim 추출
+     */
+    public Optional<String> getClaim(String accessToken) {
+        try {
+            DecodedJWT decodedJWT = (JWT.require(Algorithm.HMAC512(secretKey)).build().verify(accessToken)); //유효하지 않은 토큰이면 예외
+            // claim 리턴
+            return Optional.ofNullable(decodedJWT.getClaim("email").asString());
+        } catch (Exception e) {
+            log.error("Claim 추출 실패");
+            // 유효하지 않은 토큰이면 빈 객체 리턴
+            return Optional.empty();
+        }
+    }
 }
