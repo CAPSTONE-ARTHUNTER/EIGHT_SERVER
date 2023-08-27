@@ -132,5 +132,22 @@ public class JwtServiceTest {
         assertThat(isValidKey).isFalse();
         assertThat(isValidTime).isFalse();
     }
+    @DisplayName("Claim 추출")
+    @Test
+    void testGetClaim() {
+        //given
+        String testClaim = "test@example.com";
+        Date 유효한시간 = new Date(System.currentTimeMillis() + 1000);
+        String accessToken = JWT.create()
+                .withClaim("email", testClaim)
+                .withExpiresAt(유효한시간).sign(Algorithm.HMAC512("sampleSecretKeyForTest"));
+
+        //when
+        Optional<String> claim = jwtService.getClaim(accessToken);
+
+        //then
+        assertThat(claim).isPresent().hasValue(testClaim);
+        log.info(claim.get());
+    }
 }
 
