@@ -42,34 +42,31 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
                 = userRequest.getClientRegistration().getRegistrationId();
         String userNameAttributeName   // OAuth 로그인 시 키가 되는 값 (ex. 구글의 기본 코드는 'sub')
                 = userRequest.getClientRegistration().getProviderDetails().getUserInfoEndpoint().getUserNameAttributeName();
-        SocialType socialType
+        SocialType socialType           // GOOGLE
                 = getSocialType(registrationId);
-        log.info("registration Id: {}", registrationId);                // google
-        log.info("userNameAttributeName: {}", userNameAttributeName);   // sub
-        log.info("socialType: {}", socialType);                         // GOOGLE
 
-        // oAuth2User의 정보 attributes에 저장 (dto 클래스인 OAuthAttributes)
-        OAuthAttributes attributes = OAuthAttributes.of(socialType, userNameAttributeName,
+        // oAuth2User의 정보 attributes에 저장 (OAuthAttributes)
+        OAuthAttributes foundAttributes = OAuthAttributes.of(socialType, userNameAttributeName,
                 oAuth2User.getAttributes());
 
         // 해당 User가 이미 DB에 있다면 Update, 업다면 새로 Create
-        User user = createOrUpdateUser(attributes, socialType);
+        User user = createOrUpdateUser(foundAttributes, socialType);
 
 
         // OAuth2User 리턴
         return new DefaultOAuth2User(Collections.singleton(new SimpleGrantedAuthority(user.getRoleKey())),
-                attributes.getAttributes(), attributes.getNameAtrributeKey());
+                foundAttributes.getAttributes(), foundAttributes.getNameAtrributeKey());
     }
 
     // Social Type 리턴
     private SocialType getSocialType(String registrationId) {
         // 다른 소셜로그인 추가시 로직 추가
         if(registrationId.equals("google")) {
-            log.info("구글 소셜로그인 진행");
+            log.info("[loadUser] 구글 로그인을 진행합니다.");
             return SocialType.GOOGLE;
         }
         else {
-            log.info("그 외 로그인 진행");
+            log.info("그 외 소셜 로그인을 진행합니다.");
             return null;
         }
     }
@@ -84,6 +81,7 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
                 .email(attributes.getEmail())
                 .picture(attributes.getPicture())
                 .role(Role.USER)   // TODO: 일단 USER로 설정
+                .socialType(SocialType.GOOGLE)      //TODO: 일단 GOOGLE로 설정
                 .build();
     }
 
@@ -99,12 +97,12 @@ public class CustomOAuth2UserService implements OAuth2UserService<OAuth2UserRequ
         // 해당 유저가 이미 로그인한 적이 있다면 정보만 업데이트
         if (userOptional.isPresent()) {
             user = userOptional.get();
-            log.info("기존에 DB에 저장된 유저입니다. 이메일: {} ", email);
+            log.info("  기존에 DB에 저장된 유저입니다. 이메일: {} ", email);
             user.update(attributes.getName(), attributes.getPicture());
         }
         // 최초 로그인이라면 User 생성
         else {
-            log.info("DB에 유저를 새로 저장합니다. 이메일: {}", email);
+            log.info("  DB에 유저를 새로 저장합니다. 이메일: {}", email);
             user = createUser(attributes, socialType);
         }
 
