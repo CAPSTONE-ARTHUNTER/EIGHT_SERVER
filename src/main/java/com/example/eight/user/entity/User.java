@@ -8,6 +8,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -35,13 +37,13 @@ public class User {
     @Column(columnDefinition = "DECIMAL(10.1) default 0.0 ")
     private double exp;
 
-    //@Column(name = "created_at", nullable = false)
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
+    @CreationTimestamp  // INSERT시 시간 기록됨
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt = LocalDateTime.now();
 
-    //@Column(name = "updated_at", nullable = false)
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
+    @UpdateTimestamp    // UPDATE시 시간 기록됨
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt = LocalDateTime.now();
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
