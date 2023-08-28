@@ -102,7 +102,21 @@ public class JwtAuthFilter extends OncePerRequestFilter {
      *  Refresh 토큰으로 유저 찾아서 -> refresh와 access 토큰 재발급
      */
     public void reCreateTokens(HttpServletResponse response, String refreshToken) {
+        userRepository.findByRefreshToken(refreshToken)
+                .ifPresent(user -> {                        // refresh token으로 찾은 유저가 있으면
+                    // 1. refresh 토큰 새로 발급 후 저장
+                    String newRefreshToken = jwtService.createRefreshToken();
+                    log.info("새로 발급한 refresh 토큰: {}", newRefreshToken);
+                    user.updateRefreshToken(newRefreshToken);
+                    userRepository.save(user);
 
+                    // 2. access token 재발급
+                    String newAccessToken = jwtService.createAccessToken(user.getEmail());    // access token 생성
+                    log.info("새로 발급한 access 토큰: {}", newAccessToken);
+
+                    // 3.refresh와 access 토큰 response 헤더로 보내기
+                    jwtService.sendTokens(response, newAccessToken, newRefreshToken);
+                });
     }
 
 
