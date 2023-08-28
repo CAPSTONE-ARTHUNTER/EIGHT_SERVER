@@ -87,7 +87,7 @@ public class JwtService {
 
         response.setHeader(accessHeader, accessToken);      // Acess Token을 헤더에 싣기
         response.setHeader(refreshHeader, refreshToken);    // Refresh Token을 헤더에 싣기
-        log.info("Access Token 및 Refresh Token 헤더로 보내기 성공");
+        log.info("[Response 헤더] Access & Refresh 토큰을 응답 헤더로 보냈습니다.");
     }
 
     /*
@@ -99,7 +99,7 @@ public class JwtService {
             case "accessToken" -> header = accessHeader;
             case "refreshToken" -> header = refreshHeader;
             default -> {
-                log.info("인자로 'accessToken', 'refreshToken' 중 하나를 입력하세요");
+                log.info("[오류] 인자로 'accessToken', 'refreshToken' 중 하나를 입력하세요");
                 return Optional.empty();
             }
         }
@@ -118,7 +118,7 @@ public class JwtService {
             JWT.require(Algorithm.HMAC512(secretKey)).build().verify(token);
             return true;
         } catch (Exception e) {
-            log.error("유효하지 않은 토큰 : {}", e.getMessage());
+            log.error( "유효한 토큰이 아님 - {}",e.getMessage());
             return false;
         }
     }

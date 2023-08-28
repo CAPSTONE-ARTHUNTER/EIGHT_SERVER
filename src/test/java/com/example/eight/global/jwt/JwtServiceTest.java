@@ -57,11 +57,11 @@ public class JwtServiceTest {
         //then
         // 1. AccessToken이 비어있지 않은지 검증
         assertThat(accessToken).isNotBlank();
-        log.info("발급된 accessToken: "+ accessToken);
+//        log.info("발급된 accessToken: "+ accessToken);
         // 2. email이 같은지 검증
         String decodedEmail = JWT.decode(accessToken).getClaim("email").toString();
         assertThat( (decodedEmail)).isEqualTo("\""+testEmail+"\"");
-        log.info("발급된 유저 email: "+ decodedEmail);
+//        log.info("발급된 유저 email: "+ decodedEmail);
     }
 
 
