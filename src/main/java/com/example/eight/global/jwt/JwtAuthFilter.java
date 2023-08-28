@@ -1,9 +1,15 @@
 package com.example.eight.global.jwt;
 
+import com.example.eight.user.entity.User;
+import com.example.eight.user.repository.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -21,6 +27,7 @@ import java.util.Optional;
 @Slf4j
 public class JwtAuthFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
+    private final UserRepository userRepository;
 
     //OncePerRequestFilter의 doFilterInternal()를 Override
     @Override
@@ -50,7 +57,45 @@ public class JwtAuthFilter extends OncePerRequestFilter {
      * Access 토큰 확인해서 유저 인증 처리
      */
     public void authenticateAccessToken(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        // request 헤더에서 access 토큰 가져오기
+        Optional<String> accessToken = jwtService.getToken(request, "accessToken");
 
+        // access 토큰이 유효하다면
+        if (accessToken.isPresent() && jwtService.validateToken(accessToken.get())) {
+            log.info("[authenticateAccessToken] access 토큰 유효함: {}",accessToken);
+
+            // 토큰에서 claim 추출
+            String userEmail = jwtService.getClaim(accessToken.get()).orElse(null);
+            // claim으로 찾은 DB에서 유저의 Authentication 객체를 SecurityContextHodler에 저장
+            if (userEmail != null) {
+                userRepository.findByEmail(userEmail)
+                        .ifPresent(this::authenticateUser); // authenticateUser 메소드 실행
+            }
+        }
+        filterChain.doFilter(request, response);    // 인증 허가 처리된 객체를 SecurityContextHolder에 담기
+    }
+
+    /**
+     * 인증객체 생성
+     */
+    public void authenticateUser(User foundUser) {
+
+        //UserDetails 객체
+        UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
+                .username(foundUser.getEmail())
+                .password("randomPassword")     //소셜로그인은 비밀번호가 없으므로 임의의 비밀번호 지정
+                .roles(foundUser.getRole().name())
+                .build();
+
+        // Authentication 객체 (new UsernamePasswordAuthenticationToken()로 생성)
+        Authentication authentication = new UsernamePasswordAuthenticationToken(
+                userDetails,                    // principal (유저 정보)
+                null,                           // credentails
+                userDetails.getAuthorities());  //authorities
+        log.info("[authenticateUser] Authentication 객체를 생성했습니다. (유저 이메일: {})",authentication.getName());
+
+        // Authentication 객체에 대한 인증 허가
+        SecurityContextHolder.getContext().setAuthentication(authentication);
     }
 
     /**
