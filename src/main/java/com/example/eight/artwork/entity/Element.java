@@ -30,20 +30,19 @@ public class Element implements Serializable {
     @Column(name = "image", length = 300)
     private String image;
 
-    //TODO: point 좌표 구현
-    //@Embedded
-    //private Point2D point;
+    @Column(name = "point", length = 100)  // "x:10, y:20"
+    private String point;
 
     @Lob
     @Column(name = "audio_description")
     private byte[] audioDescription;
 
     @Builder
-    public Element(Part part, @NotNull String name, String image, byte[] audioDescription) {
+    public Element(Part part, @NotNull String name, String image, String point, byte[] audioDescription) {
         this.part = part;
         this.name = name;
         this.image = image;
-        //this.point = point;
+        this.point = point;
         this.audioDescription = audioDescription;
     }
 
