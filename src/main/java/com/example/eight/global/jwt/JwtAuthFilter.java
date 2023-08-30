@@ -88,7 +88,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                         .ifPresent(this::authenticateUser); // authenticateUser 메소드 실행
             }
         }
-        filterChain.doFilter(request, response);    // 인증 허가 처리된 객체를 SecurityContextHolder에 담기
+        // 토큰 검증 실패 -> 로그인 페이지로 리다이렉트
+        else{
+            log.info("유효한 access 토큰도 없으므로 로그인 페이지로 리다이렉트합니다.");
+            response.sendRedirect("/oauth2/authorization/google");
+        }
     }
 
     /**
