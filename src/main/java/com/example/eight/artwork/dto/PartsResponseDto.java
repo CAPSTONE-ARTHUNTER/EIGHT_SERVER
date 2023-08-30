@@ -11,6 +11,7 @@ import java.util.List;
 public class PartsResponseDto {
     private String relicName;
     private String relicImage;
+    private String relicBadgeImage;
     private List<PartInfoDto> partInfos;
     private int totalPartCount;
     private int totalSolvedPartCount;
