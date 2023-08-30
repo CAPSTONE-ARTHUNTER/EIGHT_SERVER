@@ -17,6 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.RequiredArgsConstructor;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Optional;
 
 /*
@@ -32,22 +33,37 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     //OncePerRequestFilter의 doFilterInternal()를 Override
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        log.info("-- request 헤더의 jwt 토큰 검증 --");
-
         // request 헤더에서 refresh 토큰 가져오기
         Optional<String> refreshToken = jwtService.getToken(request, "refreshToken")
                 .filter(jwtService::validateToken);
 
-        // 유효한 refresh token이 없다면 -> access 토큰을 검사해서 인증 처리
-        if(refreshToken.isEmpty()){
-            log.info("[doFilterInternal] 유효한 refresh 토큰이 없어 access 토큰을 검사합니다.");
-            authenticateAccessToken(request, response, filterChain);
-            return;
+        /*
+        다음 요청 URL은 토큰을 담아 요청할 필요가 없으므로 필터 실행하지 않음
+         */
+        String requestURI = request.getRequestURI();    // 요청 URI
+        if (List.of("/oauth2/authorization/google",
+                        "/",
+                        "/favicon.ico",
+                        "/app/artwork").contains(requestURI)) {
+            log.info("\""+requestURI + "\" 이므로 토큰을 검증하지 않습니다. ");
+            filterChain.doFilter(request, response); // 다음 필터 호출
         }
 
-        // 유효한 refresh token이 있다면 -> access 토큰이 만료된 경우
-        // refresh 토큰이 DB와 일치하는지 판단 후 토큰 재발급
-        if(refreshToken.isPresent()) {
+        /*
+         유효한 refresh token이 없다면 -> access 토큰을 검사해서 인증 처리
+         */
+        else if(refreshToken.isEmpty()){
+            log.info("\""+requestURI + "\" 이므로 -- 토큰을 검증합니다 --");
+            log.info("[doFilterInternal] 유효한 refresh 토큰이 없어 access 토큰을 검사합니다.");
+            authenticateAccessToken(request, response, filterChain);
+        }
+
+        /*
+         유효한 refresh token이 있다면 -> access 토큰이 만료된 경우
+         refresh 토큰이 DB와 일치하는지 판단 후 토큰 재발급
+         */
+        else if(refreshToken.isPresent()) {
+            log.info("\""+requestURI + "\" 이므로 -- 토큰을 검증합니다 --");
             log.info("[doFilterInternal] 유효한 refresh 토큰이니 access 토큰과 refresh 토큰을 재발급합니다.");
             reCreateTokens(response, refreshToken.get());
         }
@@ -60,7 +76,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         // request 헤더에서 access 토큰 가져오기
         Optional<String> accessToken = jwtService.getToken(request, "accessToken");
 
-        // access 토큰이 유효하다면
+        // access 토큰이 유효하므로 토큰 검증 성공
         if (accessToken.isPresent() && jwtService.validateToken(accessToken.get())) {
             log.info("[authenticateAccessToken] access 토큰 유효함: {}",accessToken);
 
