@@ -44,7 +44,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         if (List.of("/oauth2/authorization/google",
                         "/",
                         "/favicon.ico",
-                        "/app/artwork").contains(requestURI)) {
+                        "/app").contains(requestURI)) {
             log.info("\""+requestURI + "\" 이므로 토큰을 검증하지 않습니다. ");
             filterChain.doFilter(request, response); // 다음 필터 호출
         }
