@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 public class ArtworkController{
     private final ArtworkService artworkService;
 
-    //요소 인식
+    // 요소 인식
     @PostMapping("/detection")
     public ResponseEntity<DetectionResponseDto> performDetection(@RequestBody DetectionRequestDto requestDto) {
         DetectionResponseDto.DetectionData detectionData = artworkService.performDetection(requestDto);
@@ -29,7 +29,8 @@ public class ArtworkController{
         return ResponseEntity.ok(responseDto);
     }
 
-    @GetMapping("/parts")
+    // 작품 부분 정보 조회 (퍼즐 페이지)
+    @GetMapping("/partsinfo")
     public ResponseEntity<PartsResponseDto> getArtworkParts(@RequestParam Long id) {
         PartsResponseDto responseDto = artworkService.getArtworkParts(id);
         return ResponseEntity.ok(responseDto);
