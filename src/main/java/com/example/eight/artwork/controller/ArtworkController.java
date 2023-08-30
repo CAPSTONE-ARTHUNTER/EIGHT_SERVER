@@ -1,8 +1,6 @@
 package com.example.eight.artwork.controller;
 
-import com.example.eight.artwork.dto.DetectionRequestDto;
-import com.example.eight.artwork.dto.DetectionResponseDto;
-import com.example.eight.artwork.dto.PartsResponseDto;
+import com.example.eight.artwork.dto.*;
 import com.example.eight.artwork.service.ArtworkService;
 import lombok.AllArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -34,6 +32,18 @@ public class ArtworkController{
     public ResponseEntity<PartsResponseDto> getArtworkParts(@RequestParam Long id) {
         PartsResponseDto responseDto = artworkService.getArtworkParts(id);
         return ResponseEntity.ok(responseDto);
+    }
+
+    // 태그 인식
+    @PostMapping("/recognize-tag")
+    public ResponseEntity<TagResponseDto> recognizeTag(@RequestBody TagRequestDto requestDto) {
+        TagResponseDto tagResponseDto = artworkService.performTagRecognition(requestDto);
+
+        if (tagResponseDto != null) {
+            return ResponseEntity.ok(tagResponseDto);
+        } else {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
 }
