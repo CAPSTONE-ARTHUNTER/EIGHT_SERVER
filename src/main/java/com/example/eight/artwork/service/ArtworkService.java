@@ -104,6 +104,7 @@ public class ArtworkService {
         PartsResponseDto responseDto = PartsResponseDto.builder()
                 .relicName(relic.getName())
                 .relicImage(relic.getImage())
+                .relicBadgeImage(relic.getBadgeImage())
                 .partInfos(partInfoDtos)
                 .totalPartCount(parts.size())
                 .totalSolvedPartCount(totalSolvedPartCount)
