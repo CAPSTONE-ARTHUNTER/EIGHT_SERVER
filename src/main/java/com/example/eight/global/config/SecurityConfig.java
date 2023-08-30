@@ -3,7 +3,7 @@ package com.example.eight.global.config;
 import com.example.eight.global.oauth2.handler.OAuth2LoginFailureHandler;
 import com.example.eight.global.oauth2.handler.OAuth2LoginSuccessHandler;
 import com.example.eight.global.oauth2.service.CustomOAuth2UserService;
-import com.example.eight.user.entity.Role;
+import com.example.eight.user.Role;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -37,28 +37,33 @@ public class SecurityConfig {
                 .httpBasic(AbstractHttpConfigurer::disable)    // Bearer 방식 사용하므로 httpBasic 비활성화
                 .sessionManagement(sessionManagement ->
                         sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS)  // 세션 사용하지 않음
-                );
-
-        httpSecurity
+                )
                 // URL별 권한 설정
                 .authorizeHttpRequests(Requests ->
                         Requests
-                                // 다음 URL은 인증 없어도 모두가 접근 가능 TODO: (수정 예정)
+                                // 인증 없이 접근 가능한 URL TODO: 추가 예정
                                 .requestMatchers(
-                                        "/",
+                                        "/",                    // 루트 페이지
+                                        "/app",                         // 메인 페이지
+                                        "/oauth2/authorization/google",  // 로그인 페이지
                                         "/css/**",
                                         "/image/**",
-                                        "/js/**").permitAll()
-                                // 다음 URL은 role이 USER여야 가능 TODO: (수정 예정)
+                                        "/js/**",
+                                        "/favicon.ico"
+                                ).permitAll()
+                                // USER만 접근 가능한 URL (jwt 토큰이 인증되어야 USER로 인증함)
                                 .requestMatchers(
-                                        "/users/**").hasRole(Role.USER.name())
+                                        "/app/users/**").hasRole(Role.USER.name())
+                                // ADMIN만 접근 가능한 URL
+                                .requestMatchers(
+                                        "/app/admin/**").hasRole((Role.ADMIN.name()))
                                 // 나머지 URL은 인증 필요
                                 .anyRequest().authenticated()
-                );
-
-        httpSecurity
+                )
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
                 .oauth2Login(oauth2Login ->
                         oauth2Login
+                                .loginPage("/oauth2/authorization/google")     // oauth 로그인 시작 url
                                 .successHandler(oAuth2LoginSuccessHandler)      // OAuth2 로그인 성공시 Handler
                                 .failureHandler(oAuth2LoginFailureHandler)      // OAuth2 로그인 실패시 Handler
                                 // OAuth 로그인 후 유저 정보 가져옴
@@ -78,6 +83,9 @@ public class SecurityConfig {
          httpSecurity
                  // 모든 request에서 jwt 토큰 검증하는 필터
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+
+        // TODO: cors 설정
+        // TODO: 예외 처리 필터
 
         return httpSecurity.build();
     }
