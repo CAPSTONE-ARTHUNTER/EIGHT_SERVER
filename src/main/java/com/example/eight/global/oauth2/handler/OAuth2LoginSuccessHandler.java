@@ -1,9 +1,12 @@
 package com.example.eight.global.oauth2.handler;
 
+import com.example.eight.user.dto.JwtTokenDto;
+import com.example.eight.user.dto.ResponseDto;
 import com.example.eight.user.entity.User;
 import com.example.eight.user.repository.UserRepository;
 import com.example.eight.global.jwt.JwtService;
 import com.example.eight.user.service.UserService;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -26,6 +29,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
     private final JwtService jwtService;
     private final UserRepository userRepository;
     private final UserService userService;
+    private final ObjectMapper objectMapper;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
@@ -37,7 +41,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
 
             // 해당 유저의 토큰 생성 TODO: 일단 GUEST로 하고, 추가 유저 정보 입력하면(nickname) USER로 바꾸기
             log.info("[onAuthenticationSuccess] 토큰을 생성합니다.");
-            CreateToken(response, attributes); // 토큰 생성
+            CreateToken(request, response, attributes); // 토큰 생성
 
         } catch (Exception e) {
             throw e;
@@ -45,7 +49,7 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
     }
 
 
-    private void CreateToken(HttpServletResponse response, Map<String, Object> attributes) throws IOException {
+    private void CreateToken(HttpServletRequest request, HttpServletResponse response, Map<String, Object> attributes) throws IOException {
         String userEmail = (String) attributes.get("email");    // 현재 로그인한 유저의 이메일
         log.info("  소셜 로그인한 이메일: "+ userEmail);
 
@@ -66,5 +70,18 @@ public class OAuth2LoginSuccessHandler implements AuthenticationSuccessHandler {
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new IllegalArgumentException("이메일에 해당하는 유저가 없음"));
         userService.updateRefreshToken(user.getId(), refreshToken);
+
+        // 응답 객체 설정
+        response.setContentType("application/json");
+        response.setCharacterEncoding("utf-8");
+        String result = objectMapper.writeValueAsString(
+                ResponseDto.builder()
+                        .status("success")
+                        .message("Google OAuth login successful")
+                        .data(new JwtTokenDto("Bearer " +accessToken, "Bearer " +refreshToken))
+                        .build());
+        response.getWriter().write(result);
+
+        // TODO: 로그인 성공 후 로직 추가
     }
 }
