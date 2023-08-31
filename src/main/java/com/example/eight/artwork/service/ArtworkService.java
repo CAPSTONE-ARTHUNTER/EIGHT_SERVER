@@ -42,7 +42,6 @@ public class ArtworkService {
             return null;
         }
     }
-
     private Element validateAndRecordElement(DetectionRequestDto requestDto) {
         String elementName = requestDto.getName();
         Element element = elementRepository.findByName(elementName);
@@ -157,4 +156,20 @@ public class ArtworkService {
             return null;  // 유사한 작품명을 찾지 못한 경우
         }
     }
+
+    // 모든 작품명 가져오기
+    private List<String> getAllArtworkNames() {
+        List<Relic> relics = relicRepository.findAll();
+        List<String> artworkNames = new ArrayList<>();
+
+        for (Relic relic : relics) {
+            artworkNames.add(relic.getName());
+        }
+
+        return artworkNames;
+    }
+
 }
+
+
+
