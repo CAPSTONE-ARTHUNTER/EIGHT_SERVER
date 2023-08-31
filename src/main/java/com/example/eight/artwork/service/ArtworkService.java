@@ -169,6 +169,27 @@ public class ArtworkService {
         return artworkNames;
     }
 
+    // 유사한 작품명 찾기
+    // Jaro-Winkler 유사도 계산
+    private String findBestMatchingName(String detectedTag, List<String> artworkNames) {
+        String bestMatchingName = null;
+        double maxSimilarity = 0.0;
+
+        JaroWinklerDistance jaroWinklerDistance = new JaroWinklerDistance();
+
+        for (String name : artworkNames) {
+            // 유사도 계산
+            double similarity = jaroWinklerDistance.apply(detectedTag, name);
+            if (similarity > maxSimilarity) {
+                // 더 큰 유사도를 찾았을 경우 값을 업데이트하고 작품명 저장
+                maxSimilarity = similarity;
+                bestMatchingName = name;
+            }
+        }
+
+        return bestMatchingName;  // 가장 유사한 작품명 반환
+    }
+
 }
 
 
