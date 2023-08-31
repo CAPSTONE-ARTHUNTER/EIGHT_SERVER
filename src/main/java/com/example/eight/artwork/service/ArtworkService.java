@@ -122,6 +122,13 @@ public class ArtworkService {
         Long relicId;
         String bestMatchingName = null;
 
+        // 데이터베이스에 태그와 일치하는 작품명이 있는 경우
+        if (relic != null) {
+            // ID 설정
+            relicId = relic.getId();
+            bestMatchingName = detectedTag;
+        }
+
         // 응답 객체 생성
         if (relicId != null) {
             return TagResponseDto.builder()
@@ -135,7 +142,6 @@ public class ArtworkService {
 
 
 }
-
 
 
 
