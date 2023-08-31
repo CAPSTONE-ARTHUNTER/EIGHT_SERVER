@@ -42,6 +42,7 @@ public class ArtworkService {
             return null;
         }
     }
+
     private Element validateAndRecordElement(DetectionRequestDto requestDto) {
         String elementName = requestDto.getName();
         Element element = elementRepository.findByName(elementName);
@@ -127,6 +128,23 @@ public class ArtworkService {
             // ID 설정
             relicId = relic.getId();
             bestMatchingName = detectedTag;
+        } else {
+            // 데이터베이스에 태그와 일치하는 작품명이 없을 때, 유사한 작품명 찾기
+            List<String> allArtworkNames = getAllArtworkNames();
+            bestMatchingName = findBestMatchingName(detectedTag, allArtworkNames);
+
+            if (bestMatchingName != null) {
+                // ID 설정
+                relic = relicRepository.findByName(bestMatchingName);
+                if (relic != null) {
+                    relicId = relic.getId();
+                } else {
+                    relicId = null;
+                }
+            } else {
+                // 유사한 작품명도 없을 경우
+                relicId = null;
+            }
         }
 
         // 응답 객체 생성
@@ -139,9 +157,4 @@ public class ArtworkService {
             return null;  // 유사한 작품명을 찾지 못한 경우
         }
     }
-
-
 }
-
-
-
