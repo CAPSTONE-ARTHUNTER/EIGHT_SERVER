@@ -38,7 +38,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 .filter(jwtService::validateToken);
 
         /*
-        다음 요청 URL은 토큰을 담아 요청할 필요가 없으므로 필터 실행하지 않음
+         1. 다음 요청은 토큰을 담아 요청할 필요가 없으므로 필터 실행하지 않음
          */
         String requestURI = request.getRequestURI();    // 요청 URI
         if (List.of("/oauth2/authorization/google",
@@ -46,27 +46,27 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                         "/favicon.ico",
                         "/app").contains(requestURI)) {
             log.info("\""+requestURI + "\" 이므로 토큰을 검증하지 않습니다. ");
-            filterChain.doFilter(request, response); // 다음 필터 호출
         }
 
         /*
-         유효한 refresh token이 없다면 -> access 토큰을 검사해서 인증 처리
+         2. 유효한 refresh token이 없다면 -> access 토큰을 검사해서 인증 처리
          */
         else if(refreshToken.isEmpty()){
             log.info("\""+requestURI + "\" 이므로 -- 토큰을 검증합니다 --");
             log.info("[doFilterInternal] 유효한 refresh 토큰이 없어 access 토큰을 검사합니다.");
             authenticateAccessToken(request, response, filterChain);
         }
-
         /*
-         유효한 refresh token이 있다면 -> access 토큰이 만료된 경우
-         refresh 토큰이 DB와 일치하는지 판단 후 토큰 재발급
+         3. 유효한 refresh token이 있다면 -> refresh 토큰이 DB와 일치하는지 판단 후 토큰 재발급
          */
-        else if(refreshToken.isPresent()) {
+        else{
             log.info("\""+requestURI + "\" 이므로 -- 토큰을 검증합니다 --");
             log.info("[doFilterInternal] 유효한 refresh 토큰이니 access 토큰과 refresh 토큰을 재발급합니다.");
             reCreateTokens(response, refreshToken.get());
         }
+
+        // 다음 필터 호출
+        filterChain.doFilter(request, response);
     }
 
     /**
@@ -84,8 +84,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             String userEmail = jwtService.getClaim(accessToken.get()).orElse(null);
             // claim으로 찾은 DB에서 유저의 Authentication 객체를 SecurityContextHodler에 저장
             if (userEmail != null) {
-                userRepository.findByEmail(userEmail)
-                        .ifPresent(this::authenticateUser); // authenticateUser 메소드 실행
+                Optional<User> userOptional = userRepository.findByEmail(userEmail);
+                if (userOptional.isPresent()) {
+                    User user = userOptional.get();
+                    authenticateUser(user, accessToken.get());
+                }
             }
         }
         // 토큰 검증 실패 -> 로그인 페이지로 리다이렉트
@@ -98,7 +101,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     /**
      * 인증객체 생성
      */
-    public void authenticateUser(User foundUser) {
+    public void authenticateUser(User foundUser, String accessToken) {
 
         //UserDetails 객체
         UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
@@ -110,7 +113,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         // Authentication 객체 (new UsernamePasswordAuthenticationToken()로 생성)
         Authentication authentication = new UsernamePasswordAuthenticationToken(
                 userDetails,                    // principal (유저 정보)
-                null,                           // credentails
+                accessToken,                           // credentails
                 userDetails.getAuthorities());  //authorities
         log.info("[authenticateUser] Authentication 객체를 생성했습니다. (유저 이메일: {})",authentication.getName());
 
