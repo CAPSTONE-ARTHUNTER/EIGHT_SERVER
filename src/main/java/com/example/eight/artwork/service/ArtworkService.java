@@ -1,9 +1,6 @@
 package com.example.eight.artwork.service;
 
-import com.example.eight.artwork.dto.DetectionRequestDto;
-import com.example.eight.artwork.dto.DetectionResponseDto;
-import com.example.eight.artwork.dto.PartInfoDto;
-import com.example.eight.artwork.dto.PartsResponseDto;
+import com.example.eight.artwork.dto.*;
 import com.example.eight.artwork.entity.Element;
 import com.example.eight.artwork.entity.Part;
 import com.example.eight.artwork.entity.Relic;
@@ -11,6 +8,7 @@ import com.example.eight.artwork.entity.SolvedElement;
 import com.example.eight.artwork.repository.*;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.text.similarity.JaroWinklerDistance;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -113,8 +111,86 @@ public class ArtworkService {
         return responseDto;  // 최종 응답 객체
     }
 
-}
+    // 태그 인식 API
+    public TagResponseDto performTagRecognition(TagRequestDto requestDto) {
+        String detectedTag = requestDto.getText();
 
+        // 데이터베이스에서 태그와 일치하는 작품 정보 조회
+        Relic relic = relicRepository.findByName(detectedTag);
+
+        // 응답 객체 생성 전 relicId 변수 초기화
+        Long relicId;
+        String bestMatchingName = null;
+
+        // 데이터베이스에 태그와 일치하는 작품명이 있는 경우
+        if (relic != null) {
+            // ID 설정
+            relicId = relic.getId();
+            bestMatchingName = detectedTag;
+        } else {
+            // 데이터베이스에 태그와 일치하는 작품명이 없을 때, 유사한 작품명 찾기
+            List<String> allArtworkNames = getAllArtworkNames();
+            bestMatchingName = findBestMatchingName(detectedTag, allArtworkNames);
+
+            if (bestMatchingName != null) {
+                // ID 설정
+                relic = relicRepository.findByName(bestMatchingName);
+                if (relic != null) {
+                    relicId = relic.getId();
+                } else {
+                    relicId = null;
+                }
+            } else {
+                // 유사한 작품명도 없을 경우
+                relicId = null;
+            }
+        }
+
+        // 응답 객체 생성
+        if (relicId != null) {
+            return TagResponseDto.builder()
+                    .id(relicId)
+                    .name(bestMatchingName)  // 유사한 작품명 사용
+                    .build();
+        } else {
+            return null;  // 유사한 작품명을 찾지 못한 경우
+        }
+    }
+
+    // 모든 작품명 가져오기
+    private List<String> getAllArtworkNames() {
+        List<Relic> relics = relicRepository.findAll();
+        List<String> artworkNames = new ArrayList<>();
+
+        for (Relic relic : relics) {
+            artworkNames.add(relic.getName());
+        }
+
+        return artworkNames;
+    }
+
+    // 유사한 작품명 찾기
+    // Jaro-Winkler 유사도 계산
+    private String findBestMatchingName(String detectedTag, List<String> artworkNames) {
+        String bestMatchingName = null;
+        double maxSimilarity = 0.0;
+
+        JaroWinklerDistance jaroWinklerDistance = new JaroWinklerDistance();
+
+        for (String name : artworkNames) {
+            // 유사도 계산
+            double similarity = jaroWinklerDistance.apply(detectedTag, name);
+            if (similarity > maxSimilarity) {
+                // 더 큰 유사도를 찾았을 경우 값을 업데이트하고 작품명 저장
+                maxSimilarity = similarity;
+                bestMatchingName = name;
+            }
+        }
+
+        return bestMatchingName;  // 가장 유사한 작품명 반환
+    }
+
+}
 
 
 

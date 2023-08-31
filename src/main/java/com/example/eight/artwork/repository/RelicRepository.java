@@ -9,7 +9,7 @@ import java.util.List;
 
 @Repository
 public interface RelicRepository extends JpaRepository<Relic, Long> {
-
+    Relic findByName(String name);
     @Override
     <S extends Relic> S save(S entity);
 }
