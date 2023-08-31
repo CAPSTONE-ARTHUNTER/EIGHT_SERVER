@@ -34,6 +34,8 @@ dependencies {
 	testImplementation 'org.springframework.security:spring-security-test'
 	implementation('org.springframework.boot:spring-boot-starter-oauth2-client')
 	implementation('com.auth0:java-jwt:4.4.0')		//jwt 오픈소스 라이브러리 java-jwt
+	implementation group: 'org.apache.commons', name: 'commons-text', version: '1.9' // 작품명 유사도 검증 라이브러리
+
 }
 
 tasks.named('test') {
