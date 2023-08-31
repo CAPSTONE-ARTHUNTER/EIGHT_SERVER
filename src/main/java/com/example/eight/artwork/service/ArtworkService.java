@@ -1,9 +1,6 @@
 package com.example.eight.artwork.service;
 
-import com.example.eight.artwork.dto.DetectionRequestDto;
-import com.example.eight.artwork.dto.DetectionResponseDto;
-import com.example.eight.artwork.dto.PartInfoDto;
-import com.example.eight.artwork.dto.PartsResponseDto;
+import com.example.eight.artwork.dto.*;
 import com.example.eight.artwork.entity.Element;
 import com.example.eight.artwork.entity.Part;
 import com.example.eight.artwork.entity.Relic;
@@ -11,6 +8,7 @@ import com.example.eight.artwork.entity.SolvedElement;
 import com.example.eight.artwork.repository.*;
 
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.text.similarity.JaroWinklerDistance;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -112,6 +110,29 @@ public class ArtworkService {
 
         return responseDto;  // 최종 응답 객체
     }
+
+    // 태그 인식 API
+    public TagResponseDto performTagRecognition(TagRequestDto requestDto) {
+        String detectedTag = requestDto.getText();
+
+        // 데이터베이스에서 태그와 일치하는 작품 정보 조회
+        Relic relic = relicRepository.findByName(detectedTag);
+
+        // 응답 객체 생성 전 relicId 변수 초기화
+        Long relicId;
+        String bestMatchingName = null;
+
+        // 응답 객체 생성
+        if (relicId != null) {
+            return TagResponseDto.builder()
+                    .id(relicId)
+                    .name(bestMatchingName)  // 유사한 작품명 사용
+                    .build();
+        } else {
+            return null;  // 유사한 작품명을 찾지 못한 경우
+        }
+    }
+
 
 }
 
