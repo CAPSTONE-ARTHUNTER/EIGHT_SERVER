@@ -1,4 +1,4 @@
-package com.example.eight.user.entity;
+package com.example.eight.user;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
