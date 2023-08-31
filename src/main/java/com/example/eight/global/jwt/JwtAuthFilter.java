@@ -1,0 +1,144 @@
+package com.example.eight.global.jwt;
+
+import com.example.eight.user.entity.User;
+import com.example.eight.user.repository.UserRepository;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import lombok.extern.slf4j.Slf4j;
+import lombok.RequiredArgsConstructor;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
+
+/*
+모든 request의 토큰 검사
+ */
+@Component
+@RequiredArgsConstructor
+@Slf4j
+public class JwtAuthFilter extends OncePerRequestFilter {
+    private final JwtService jwtService;
+    private final UserRepository userRepository;
+
+    //OncePerRequestFilter의 doFilterInternal()를 Override
+    @Override
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        // request 헤더에서 refresh 토큰 가져오기
+        Optional<String> refreshToken = jwtService.getToken(request, "refreshToken")
+                .filter(jwtService::validateToken);
+
+        /*
+        다음 요청 URL은 토큰을 담아 요청할 필요가 없으므로 필터 실행하지 않음
+         */
+        String requestURI = request.getRequestURI();    // 요청 URI
+        if (List.of("/oauth2/authorization/google",
+                        "/",
+                        "/favicon.ico",
+                        "/app").contains(requestURI)) {
+            log.info("\""+requestURI + "\" 이므로 토큰을 검증하지 않습니다. ");
+            filterChain.doFilter(request, response); // 다음 필터 호출
+        }
+
+        /*
+         유효한 refresh token이 없다면 -> access 토큰을 검사해서 인증 처리
+         */
+        else if(refreshToken.isEmpty()){
+            log.info("\""+requestURI + "\" 이므로 -- 토큰을 검증합니다 --");
+            log.info("[doFilterInternal] 유효한 refresh 토큰이 없어 access 토큰을 검사합니다.");
+            authenticateAccessToken(request, response, filterChain);
+        }
+
+        /*
+         유효한 refresh token이 있다면 -> access 토큰이 만료된 경우
+         refresh 토큰이 DB와 일치하는지 판단 후 토큰 재발급
+         */
+        else if(refreshToken.isPresent()) {
+            log.info("\""+requestURI + "\" 이므로 -- 토큰을 검증합니다 --");
+            log.info("[doFilterInternal] 유효한 refresh 토큰이니 access 토큰과 refresh 토큰을 재발급합니다.");
+            reCreateTokens(response, refreshToken.get());
+        }
+    }
+
+    /**
+     * Access 토큰 확인해서 유저 인증 처리
+     */
+    public void authenticateAccessToken(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        // request 헤더에서 access 토큰 가져오기
+        Optional<String> accessToken = jwtService.getToken(request, "accessToken");
+
+        // access 토큰이 유효하므로 토큰 검증 성공
+        if (accessToken.isPresent() && jwtService.validateToken(accessToken.get())) {
+            log.info("[authenticateAccessToken] access 토큰 유효함: {}",accessToken);
+
+            // 토큰에서 claim 추출
+            String userEmail = jwtService.getClaim(accessToken.get()).orElse(null);
+            // claim으로 찾은 DB에서 유저의 Authentication 객체를 SecurityContextHodler에 저장
+            if (userEmail != null) {
+                userRepository.findByEmail(userEmail)
+                        .ifPresent(this::authenticateUser); // authenticateUser 메소드 실행
+            }
+        }
+        // 토큰 검증 실패 -> 로그인 페이지로 리다이렉트
+        else{
+            log.info("유효한 access 토큰도 없으므로 로그인 페이지로 리다이렉트합니다.");
+            response.sendRedirect("/oauth2/authorization/google");
+        }
+    }
+
+    /**
+     * 인증객체 생성
+     */
+    public void authenticateUser(User foundUser) {
+
+        //UserDetails 객체
+        UserDetails userDetails = org.springframework.security.core.userdetails.User.builder()
+                .username(foundUser.getEmail())
+                .password("randomPassword")     //소셜로그인은 비밀번호가 없으므로 임의의 비밀번호 지정
+                .roles(foundUser.getRole().name())
+                .build();
+
+        // Authentication 객체 (new UsernamePasswordAuthenticationToken()로 생성)
+        Authentication authentication = new UsernamePasswordAuthenticationToken(
+                userDetails,                    // principal (유저 정보)
+                null,                           // credentails
+                userDetails.getAuthorities());  //authorities
+        log.info("[authenticateUser] Authentication 객체를 생성했습니다. (유저 이메일: {})",authentication.getName());
+
+        // Authentication 객체에 대한 인증 허가
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+    }
+
+    /**
+     *  Refresh 토큰으로 유저 찾아서 -> refresh와 access 토큰 재발급
+     */
+    public void reCreateTokens(HttpServletResponse response, String refreshToken) {
+        userRepository.findByRefreshToken(refreshToken)
+                .ifPresent(user -> {                        // refresh token으로 찾은 유저가 있으면
+                    // 1. refresh 토큰 새로 발급 후 저장
+                    String newRefreshToken = jwtService.createRefreshToken();
+                    log.info("새로 발급한 refresh 토큰: {}", newRefreshToken);
+                    user.updateRefreshToken(newRefreshToken);
+                    userRepository.save(user);
+
+                    // 2. access token 재발급
+                    String newAccessToken = jwtService.createAccessToken(user.getEmail());    // access token 생성
+                    log.info("새로 발급한 access 토큰: {}", newAccessToken);
+
+                    // 3.refresh와 access 토큰 response 헤더로 보내기
+                    jwtService.sendTokens(response, newAccessToken, newRefreshToken);
+                });
+    }
+
+
+}
+

@@ -28,9 +28,12 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	compileOnly 'org.projectlombok:lombok'
 	annotationProcessor 'org.projectlombok:lombok'
+	testCompileOnly 'org.projectlombok:lombok'
+	testAnnotationProcessor 'org.projectlombok:lombok'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation 'org.springframework.security:spring-security-test'
 	implementation('org.springframework.boot:spring-boot-starter-oauth2-client')
+	implementation('com.auth0:java-jwt:4.4.0')		//jwt 오픈소스 라이브러리 java-jwt
 }
 
 tasks.named('test') {
