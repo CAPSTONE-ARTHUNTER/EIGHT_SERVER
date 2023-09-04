@@ -1,5 +1,6 @@
 package com.example.eight.artwork.controller;
 
+import com.example.eight.user.dto.ResponseDto;
 import com.example.eight.artwork.dto.*;
 import com.example.eight.artwork.service.ArtworkService;
 import lombok.AllArgsConstructor;
@@ -34,6 +35,21 @@ public class ArtworkController{
         return ResponseEntity.ok(responseDto);
     }
 
+    // 부분에 속하는 요소 리스트 & 수집여부 조회
+    @GetMapping("/elements")
+    public ResponseEntity<ResponseDto> getArtworkElements(@RequestParam Long relicId, @RequestParam Long partId){
+        // 각 요소 정보 및 수집여부 응답 생성
+        ElementResponseDto elementResponseDto = artworkService.getElementDetail(relicId, partId);
+
+        ResponseDto responseDto = ResponseDto.builder()
+                .status("success")
+                .message("Get detail for each element of part successful")
+                .data(elementResponseDto)
+                .build();
+
+        return ResponseEntity.ok(responseDto);
+    }
+
     // 태그 인식
     @PostMapping("/recognize-tag")
     public ResponseEntity<TagResponseDto> recognizeTag(@RequestBody TagRequestDto requestDto) {
@@ -45,5 +61,7 @@ public class ArtworkController{
             return ResponseEntity.badRequest().build();
         }
     }
+
+
 
 }
