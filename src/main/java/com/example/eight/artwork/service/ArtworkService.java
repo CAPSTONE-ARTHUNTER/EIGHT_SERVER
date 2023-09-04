@@ -7,6 +7,9 @@ import com.example.eight.artwork.entity.Relic;
 import com.example.eight.artwork.entity.SolvedElement;
 import com.example.eight.artwork.repository.*;
 
+import com.example.eight.user.entity.User;
+import com.example.eight.user.service.UserService;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.text.similarity.JaroWinklerDistance;
 import org.springframework.stereotype.Service;
@@ -27,6 +30,7 @@ public class ArtworkService {
     private final SolvedElementRepository solvedElementRepository;
     private final PartRepository partRepository;
     private final SolvedPartRepository solvedPartRepository;
+    private final UserService userService;
 
     // 요소 인식 API
     // 클라이언트로부터 받은 요청으로 작품 부분에 해당하는 요소(element)를 검증
@@ -109,6 +113,60 @@ public class ArtworkService {
                 .build();
 
         return responseDto;  // 최종 응답 객체
+    }
+
+    // part의 각 element 정보와 수집여부 조회 API
+    public ElementResponseDto getElementDetail(Long relicId, Long partId) {
+        // 현재 로그인한 유저
+        User loginUser = userService.getAuthentication();
+
+        // 쿼리 파라미터로 작품과 부분 찾기
+        Relic relic = findRelic(relicId);
+        Part part = findPart(partId);
+
+        // 1. 부분의 요소 리스트 가져와서, 각 요소마다 상세정보 DTO 생성
+        List<Element> elementList = elementRepository.findByPart(part);
+
+        List<ElementInfoDto> elementInfoDtoList = new ArrayList<>();
+        for(Element element: elementList){
+            // 로그인한 유저의 각 element 수집 완료여부 확인
+            boolean element_isSolved = solvedElementRepository.existsByUserIdAndElementId(loginUser.getId(), element.getId());
+
+            ElementInfoDto elementInfoDto = ElementInfoDto.builder()
+                    .id(element.getId())
+                    .name(element.getName())
+                    .image(element.getImage())
+                    .isSolved(element_isSolved)
+                    .build();
+
+            // 요소 상세정보를 요소 리스트에 추가
+            elementInfoDtoList.add(elementInfoDto);
+        }
+
+        // 2. 최종 DTO 생성
+        // 로그인한 유저의 part 수집 완료여부 확인
+        boolean part_isSolved = solvedPartRepository.existsByUserIdAndPartId(loginUser.getId(), part.getId());
+
+        ElementResponseDto elementResponseDto = ElementResponseDto.builder()
+                .relicName(relic.getName())
+                .partName(part.getName())
+                .part_isSolved(part_isSolved)
+                .elementInfoList(elementInfoDtoList)
+                .build();
+
+        return elementResponseDto;
+    }
+
+    // relic id로 Relic 객체 찾아 반환하는 메소드
+    private Relic findRelic(Long relicId) {
+        return relicRepository.findById(relicId)
+                .orElseThrow(() -> new EntityNotFoundException("작품을 찾을 수 없습니다."));
+    }
+
+    // part id로 Part 객체 찾아 반환하는 메소드
+    private Part findPart(Long partId) {
+        return partRepository.findById(partId)
+                .orElseThrow(() -> new EntityNotFoundException("부분을 찾을 수 없습니다."));
     }
 
     // 태그 인식 API
