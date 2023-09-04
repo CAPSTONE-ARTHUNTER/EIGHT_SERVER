@@ -124,6 +124,25 @@ public class ArtworkService {
         return responseDto;  // 최종 응답 객체
     }
 
+    // 작품 이미지 URI 가져오는 메서드
+    public String getRelicImageUri(Long relicId) {
+        // 작품 id로 작품 찾기
+        Optional<Relic> relicOptional = relicRepository.findById(relicId);
+
+        if (relicOptional.isPresent()) {
+            Relic relic = relicOptional.get();
+
+            try {
+                String serviceKey = "Enter the service key";
+
+                // API 요청 URL 생성
+                String apiUrl = "http://www.emuseum.go.kr/openapi/relic/detail?serviceKey=" + URLEncoder.encode(serviceKey, "UTF-8") + "&id=" + relic.getApiId();
+
+                URI uri = new URI(apiUrl);
+                RestTemplate restTemplate = new RestTemplate();
+                String apiResponse = restTemplate.getForObject(uri, String.class);
+
+    }
 
     // 태그 인식 API
     public TagResponseDto performTagRecognition(TagRequestDto requestDto) {
