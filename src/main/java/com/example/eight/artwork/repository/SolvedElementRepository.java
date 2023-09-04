@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface SolvedElementRepository extends JpaRepository<SolvedElement, Long> {
 
+    boolean existsByUserIdAndElementId(Long userId, Long elementId);
 }
