@@ -133,7 +133,7 @@ public class ArtworkService {
             Relic relic = relicOptional.get();
 
             try {
-                String serviceKey = "Enter the service key";
+                String serviceKey = "enter the service key";
 
                 // API 요청 URL 생성
                 String apiUrl = "http://www.emuseum.go.kr/openapi/relic/detail?serviceKey=" + URLEncoder.encode(serviceKey, "UTF-8") + "&id=" + relic.getApiId();
@@ -142,6 +142,17 @@ public class ArtworkService {
                 RestTemplate restTemplate = new RestTemplate();
                 String apiResponse = restTemplate.getForObject(uri, String.class);
 
+                // API 응답 파싱하여 이미지 uri 가져오기
+                ObjectMapper objectMapper = new ObjectMapper();
+                JsonNode jsonNode = objectMapper.readTree(apiResponse);
+                JsonNode listNode = jsonNode.get("list");
+
+                if (listNode != null && listNode.isArray() && listNode.size() > 0) {
+                    JsonNode firstItem = listNode.get(0);
+                    String artworkImageUrl = firstItem.get("imgUri").asText();
+
+                    return artworkImageUrl;
+                }
     }
 
     // 태그 인식 API
