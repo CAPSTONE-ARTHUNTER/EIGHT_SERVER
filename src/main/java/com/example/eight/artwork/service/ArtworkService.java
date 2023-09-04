@@ -7,15 +7,26 @@ import com.example.eight.artwork.entity.Relic;
 import com.example.eight.artwork.entity.SolvedElement;
 import com.example.eight.artwork.repository.*;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nimbusds.jose.shaded.gson.Gson;
+import com.nimbusds.jose.shaded.gson.JsonElement;
+import com.nimbusds.jose.shaded.gson.JsonObject;
+import com.nimbusds.jose.shaded.gson.JsonParser;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.text.similarity.JaroWinklerDistance;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
+import java.net.URI;
+import java.net.URLEncoder;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 
 @Service
 @Transactional
@@ -64,7 +75,6 @@ public class ArtworkService {
 
     // 작품 소제목 조회 API
     public PartsResponseDto getArtworkParts(Long relicId) {
-
         // TODO: 현재 로그인된 사용자 정보 가져오는 로직 추가 필요
         // User currentUser = getCurrentUser();
 
@@ -75,6 +85,9 @@ public class ArtworkService {
         }
 
         Relic relic = optionalRelic.get();
+
+        // 작품 이미지 URI 가져오기
+        String relicImageUri = getRelicImageUri(relicId);
 
         // 부분 정보 조회 및 변환
         List<Part> parts = partRepository.findByRelic(relic);
@@ -101,7 +114,7 @@ public class ArtworkService {
 
         PartsResponseDto responseDto = PartsResponseDto.builder()
                 .relicName(relic.getName())
-                .relicImage(relic.getImage())
+                .relicImage(relicImageUri)  // 작품 이미지 URI 설정
                 .relicBadgeImage(relic.getBadgeImage())
                 .partInfos(partInfoDtos)
                 .totalPartCount(parts.size())
@@ -110,6 +123,7 @@ public class ArtworkService {
 
         return responseDto;  // 최종 응답 객체
     }
+
 
     // 태그 인식 API
     public TagResponseDto performTagRecognition(TagRequestDto requestDto) {
