@@ -152,7 +152,19 @@ public class ArtworkService {
                     String artworkImageUrl = firstItem.get("imgUri").asText();
 
                     return artworkImageUrl;
+                } else {
+                    // API 응답에서 이미지 URI를 찾을 수 없는 경우
+                    return "Artwork image not found in API response.";
                 }
+            } catch (Exception e) {
+                // 예외 처리
+                e.printStackTrace();
+                return "Error occurred while fetching image URI: " + e.getMessage();
+            }
+        } else {
+            // 작품이 발견되지 않았을 때
+            return "Relic not found for ID: " + relicId;
+        }
     }
 
     // 태그 인식 API
