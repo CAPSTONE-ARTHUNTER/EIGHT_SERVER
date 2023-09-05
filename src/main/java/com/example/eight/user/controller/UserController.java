@@ -1,10 +1,14 @@
 package com.example.eight.user.controller;
 
+import com.example.eight.user.dto.ResponseDto;
+import com.example.eight.user.dto.UserProfileDto;
+import com.example.eight.user.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
@@ -19,6 +23,7 @@ public class UserController {
     @Value("${spring.security.oauth2.client.registration.google.client-id}")
     private String googleClientId;
 
+    private final UserService userService;
 
 
     @GetMapping("/")
@@ -56,4 +61,18 @@ public class UserController {
         response.sendRedirect(GoogleLoginURI);
     }
 
+    // 유저 프로필 조회
+    @GetMapping("/app/users/profile")
+    public ResponseEntity<ResponseDto> getUserInfo() {
+        // 프로필 응답 생성
+        UserProfileDto userProfileDto = userService.getUserProfile();
+
+        ResponseDto responseDto = ResponseDto.builder()
+                .status("success")
+                .message("Get user profile successful")
+                .data(userProfileDto)
+                .build();
+
+        return ResponseEntity.ok(responseDto);
+    }
 }
