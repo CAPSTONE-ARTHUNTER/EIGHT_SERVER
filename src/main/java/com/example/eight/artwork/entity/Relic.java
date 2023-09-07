@@ -20,7 +20,7 @@ public class Relic {
     private Long id;
 
     @Column(name = "api_id")
-    private Long apiId;
+    private String apiId;
 
     @NotNull
     @Column(name = "name", length = 30)
@@ -45,7 +45,7 @@ public class Relic {
     private List<Part> parts = new ArrayList<>();
 
     @Builder
-    public Relic(Long apiId, @NotNull String name, @NotNull String image, @NotNull String badgeImage,
+    public Relic(String apiId, @NotNull String name, @NotNull String image, @NotNull String badgeImage,
                  String location, @NotNull Integer partNum, List<Part> parts) {
         this.apiId = apiId;
         this.name = name;

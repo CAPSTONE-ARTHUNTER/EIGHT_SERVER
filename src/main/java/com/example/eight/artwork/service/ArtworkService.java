@@ -10,15 +10,26 @@ import com.example.eight.artwork.repository.*;
 import com.example.eight.user.entity.User;
 import com.example.eight.user.service.UserService;
 import jakarta.persistence.EntityNotFoundException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nimbusds.jose.shaded.gson.Gson;
+import com.nimbusds.jose.shaded.gson.JsonElement;
+import com.nimbusds.jose.shaded.gson.JsonObject;
+import com.nimbusds.jose.shaded.gson.JsonParser;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.text.similarity.JaroWinklerDistance;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.client.RestTemplate;
 
+import java.net.URI;
+import java.net.URLEncoder;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 
 @Service
 @Transactional
@@ -68,7 +79,6 @@ public class ArtworkService {
 
     // 작품 소제목 조회 API
     public PartsResponseDto getArtworkParts(Long relicId) {
-
         // TODO: 현재 로그인된 사용자 정보 가져오는 로직 추가 필요
         // User currentUser = getCurrentUser();
 
@@ -79,6 +89,9 @@ public class ArtworkService {
         }
 
         Relic relic = optionalRelic.get();
+
+        // 작품 이미지 URI 가져오기
+        String relicImageUri = getRelicImageUri(relicId);
 
         // 부분 정보 조회 및 변환
         List<Part> parts = partRepository.findByRelic(relic);
@@ -105,7 +118,7 @@ public class ArtworkService {
 
         PartsResponseDto responseDto = PartsResponseDto.builder()
                 .relicName(relic.getName())
-                .relicImage(relic.getImage())
+                .relicImage(relicImageUri)  // 작품 이미지 URI 설정
                 .relicBadgeImage(relic.getBadgeImage())
                 .partInfos(partInfoDtos)
                 .totalPartCount(parts.size())
@@ -163,6 +176,47 @@ public class ArtworkService {
     private Part findPart(Long partId) {
         return partRepository.findById(partId)
                 .orElseThrow(() -> new EntityNotFoundException("부분을 찾을 수 없습니다."));
+    // 작품 이미지 URI 가져오는 메서드
+    public String getRelicImageUri(Long relicId) {
+        // 작품 id로 작품 찾기
+        Optional<Relic> relicOptional = relicRepository.findById(relicId);
+
+        if (relicOptional.isPresent()) {
+            Relic relic = relicOptional.get();
+
+            try {
+                String serviceKey = "enter the service key";
+
+                // API 요청 URL 생성
+                String apiUrl = "http://www.emuseum.go.kr/openapi/relic/detail?serviceKey=" + URLEncoder.encode(serviceKey, "UTF-8") + "&id=" + relic.getApiId();
+
+                URI uri = new URI(apiUrl);
+                RestTemplate restTemplate = new RestTemplate();
+                String apiResponse = restTemplate.getForObject(uri, String.class);
+
+                // API 응답 파싱하여 이미지 uri 가져오기
+                ObjectMapper objectMapper = new ObjectMapper();
+                JsonNode jsonNode = objectMapper.readTree(apiResponse);
+                JsonNode listNode = jsonNode.get("list");
+
+                if (listNode != null && listNode.isArray() && listNode.size() > 0) {
+                    JsonNode firstItem = listNode.get(0);
+                    String artworkImageUrl = firstItem.get("imgUri").asText();
+
+                    return artworkImageUrl;
+                } else {
+                    // API 응답에서 이미지 URI를 찾을 수 없는 경우
+                    return "Artwork image not found in API response.";
+                }
+            } catch (Exception e) {
+                // 예외 처리
+                e.printStackTrace();
+                return "Error occurred while fetching image URI: " + e.getMessage();
+            }
+        } else {
+            // 작품이 발견되지 않았을 때
+            return "Relic not found for ID: " + relicId;
+        }
     }
 
     // 태그 인식 API

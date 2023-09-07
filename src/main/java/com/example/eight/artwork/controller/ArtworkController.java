@@ -29,9 +29,9 @@ public class ArtworkController{
     }
 
     // 작품 부분 정보 조회 (퍼즐 페이지)
-    @GetMapping("/partsinfo")
-    public ResponseEntity<PartsResponseDto> getArtworkParts(@RequestParam Long id) {
-        PartsResponseDto responseDto = artworkService.getArtworkParts(id);
+    @GetMapping("/partsinfo/{relic_id}")
+    public ResponseEntity<PartsResponseDto> getArtworkParts(@PathVariable("relic_id") Long relicId) {
+        PartsResponseDto responseDto = artworkService.getArtworkParts(relicId); // relicId를 전달
         return ResponseEntity.ok(responseDto);
     }
 
