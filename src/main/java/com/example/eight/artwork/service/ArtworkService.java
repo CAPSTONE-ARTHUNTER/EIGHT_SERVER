@@ -144,13 +144,9 @@ public class ArtworkService {
         }
 
         // 2. 최종 DTO 생성
-        // 로그인한 유저의 part 수집 완료여부 확인
-        boolean part_isSolved = solvedPartRepository.existsByUserIdAndPartId(loginUser.getId(), part.getId());
-
         ElementResponseDto elementResponseDto = ElementResponseDto.builder()
                 .relicName(relic.getName())
                 .partName(part.getName())
-                .part_isSolved(part_isSolved)
                 .elementInfoList(elementInfoDtoList)
                 .build();
 

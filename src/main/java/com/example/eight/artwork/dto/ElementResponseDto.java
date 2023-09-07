@@ -17,6 +17,5 @@ import java.util.List;
 public class ElementResponseDto {
     private String relicName;       // 작품명
     private String partName;        // 작품의 부분 중 조회하고자 하는 부분명
-    private boolean part_isSolved;
     private List<ElementInfoDto> elementInfoList;   // 해당 부분의 각 요소들 정보 리스트
 }
