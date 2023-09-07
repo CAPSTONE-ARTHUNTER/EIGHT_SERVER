@@ -53,9 +53,6 @@ public class UserService {
                 .email(user.getEmail())
                 .picture(user.getPicture())
                 .exp(user.getExp())
-                .createdAt(user.getCreatedAt())
-                .updatedAt(user.getUpdatedAt())
-                .role(user.getRole())
                 .socialType(user.getSocialType())
                 .build();
     }
