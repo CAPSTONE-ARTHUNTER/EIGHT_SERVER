@@ -176,6 +176,8 @@ public class ArtworkService {
     private Part findPart(Long partId) {
         return partRepository.findById(partId)
                 .orElseThrow(() -> new EntityNotFoundException("부분을 찾을 수 없습니다."));
+    }
+
     // 작품 이미지 URI 가져오는 메서드
     public String getRelicImageUri(Long relicId) {
         // 작품 id로 작품 찾기
