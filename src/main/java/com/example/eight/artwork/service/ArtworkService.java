@@ -79,8 +79,8 @@ public class ArtworkService {
 
     // 작품 소제목 조회 API
     public PartsResponseDto getArtworkParts(Long relicId) {
-        // TODO: 현재 로그인된 사용자 정보 가져오는 로직 추가 필요
-        // User currentUser = getCurrentUser();
+        // 현재 로그인된 사용자 정보
+        User loginUser = userService.getAuthentication();
 
         // 작품 정보 조회
         Optional<Relic> optionalRelic = relicRepository.findById(relicId);
@@ -99,15 +99,11 @@ public class ArtworkService {
 
         // 각 부분에 대한 정보 변환
         for (Part part : parts) {
-            int solvedPartCount = solvedPartRepository.countByPartAndIsSolved(part, true);
-            boolean isPartSolvedByCurrentUser = false;  // 현재 사용자가 해당 부분을 획득했는지 여부
-
-            // TODO: 사용자가 해당 부분을 획득했는지 확인하는 로직 필요
-            // isPartSolvedByUser(part, currentUser);
+            boolean part_isSolved = solvedPartRepository.existsByUserIdAndPartId(loginUser.getId(), part.getId());
 
             PartInfoDto partInfoDto = PartInfoDto.builder()
                     .name(part.getName())  // 부분 이름
-                    .isSolved(isPartSolvedByCurrentUser)  // 현재 사용자가 해당 부분 획득 여부
+                    .isSolved(part_isSolved)  // 현재 사용자가 해당 부분 획득 여부
                     .build();
 
             partInfoDtos.add(partInfoDto);  // 변환된 부분 정보 리스트에 추가
