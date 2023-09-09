@@ -91,7 +91,7 @@ public class ArtworkService {
         Relic relic = optionalRelic.get();
 
         // 작품 이미지 URI 가져오기
-        String relicImageUri = getRelicImageUri(relicId);
+        String relicImageUri = getRelicInfoByAPI(relicId, "imgUri");
 
         // 부분 정보 조회 및 변환
         List<Part> parts = partRepository.findByRelic(relic);
@@ -174,8 +174,8 @@ public class ArtworkService {
                 .orElseThrow(() -> new EntityNotFoundException("부분을 찾을 수 없습니다."));
     }
 
-    // 작품 이미지 URI 가져오는 메서드
-    public String getRelicImageUri(Long relicId) {
+    // 공공 API로 작품의 target 정보 가져오는 메소드
+    public String getRelicInfoByAPI(Long relicId, String target) {
         // 작품 id로 작품 찾기
         Optional<Relic> relicOptional = relicRepository.findById(relicId);
 
@@ -199,17 +199,17 @@ public class ArtworkService {
 
                 if (listNode != null && listNode.isArray() && listNode.size() > 0) {
                     JsonNode firstItem = listNode.get(0);
-                    String artworkImageUrl = firstItem.get("imgUri").asText();
+                    String targetInfo = firstItem.get(target).asText();
 
-                    return artworkImageUrl;
+                    return targetInfo;
                 } else {
                     // API 응답에서 이미지 URI를 찾을 수 없는 경우
-                    return "Artwork image not found in API response.";
+                    return String.format("Artwork %s not found in API response.", target);
                 }
             } catch (Exception e) {
                 // 예외 처리
                 e.printStackTrace();
-                return "Error occurred while fetching image URI: " + e.getMessage();
+                return String.format("Error occurred while fetching %s: ", target) + e.getMessage();
             }
         } else {
             // 작품이 발견되지 않았을 때
