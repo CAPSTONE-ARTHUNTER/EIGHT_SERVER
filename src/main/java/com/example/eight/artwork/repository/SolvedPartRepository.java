@@ -8,4 +8,6 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface SolvedPartRepository extends JpaRepository<SolvedPart, Long> {
     int countByPartAndIsSolved(Part part, boolean isSolved);
+
+    boolean existsByUserIdAndPartId(Long userId, Long partId);
 }
