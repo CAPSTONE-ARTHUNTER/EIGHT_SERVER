@@ -174,6 +174,51 @@ public class ArtworkService {
                 .orElseThrow(() -> new EntityNotFoundException("부분을 찾을 수 없습니다."));
     }
 
+    // relic의 part별 해설 찾아 반환하는 메소드
+    public PartDescriptionResponseDto getPartDescription(Long relicId){
+        // 현재 로그인한 유저
+        User loginUser = userService.getAuthentication();
+        // 작품
+        Relic relic = findRelic(relicId);
+
+        // 1. 작품의 부분 리스트 가져와서, 각 부분마다 해설 DTO 생성
+        List<Part> partList = partRepository.findByRelic(relic);
+        List<PartDescriptionInfoDto> partDescriptionInfoDtoList = new ArrayList<>();
+
+        for(Part part: partList){
+            // 로그인한 유저의 각 part 수집 완료여부 확인
+            boolean part_isSolved = solvedPartRepository.existsByUserIdAndPartId(loginUser.getId(), part.getId());
+
+            PartDescriptionInfoDto partDescriptionInfoDto = PartDescriptionInfoDto.builder()
+                    .name(part.getName())
+                    .description(part.getTextDescription())
+                    .isSolved(part_isSolved)
+                    .build();
+
+            // 요소 상세정보를 요소 리스트에 추가
+            partDescriptionInfoDtoList.add(partDescriptionInfoDto);
+        }
+
+        // 2. 공공 API에서 작품 정보 가져오기
+        String relicImage = getRelicInfoByAPI(relicId,"imgUri");
+        String relicName = getRelicInfoByAPI(relicId,"nameKr");
+        String author = getRelicInfoByAPI(relicId,"author");
+        String nationality = getRelicInfoByAPI(relicId,"nationalityName2");
+
+        // 3. 최종 DTO 생성
+        PartDescriptionResponseDto partDescriptionResponseDto = PartDescriptionResponseDto.builder()
+                .relicId(relic.getId())
+                .relicImage(relicImage)
+                .relicName(relicName)
+                .author(author)
+                .nationality(nationality)
+                .partNum(relic.getPartNum())
+                .partDescriptionInfoList(partDescriptionInfoDtoList)
+                .build();
+
+        return partDescriptionResponseDto;
+    }
+
     // 공공 API로 작품의 target 정보 가져오는 메소드
     public String getRelicInfoByAPI(Long relicId, String target) {
         // 작품 id로 작품 찾기
