@@ -10,7 +10,7 @@ branches:
 services:
   - mysql
 
-before_install:
+before_script:
   - mysql -e 'CREATE DATABASE eight;'
 
 install:
