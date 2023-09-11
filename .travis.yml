@@ -28,9 +28,9 @@ script:
   - ./gradlew bootRun
 
 env:
-  - SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3306/eight
-    SPRING_DATASOURCE_USERNAME=eight
-    SPRING_DATASOURCE_PASSWORD=eight1886!
+  - SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3306/eight?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+  - SPRING_DATASOURCE_USERNAME=eight
+  - SPRING_DATASOURCE_PASSWORD=eight1886!
 
 # CI 실행 완료시 메일로 알람
 notifications:
