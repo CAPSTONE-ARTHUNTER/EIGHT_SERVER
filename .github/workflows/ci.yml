@@ -4,12 +4,12 @@ name: ArtHunter server CI/CD
 on:
   push:
     branches: 
-      - main
+      - ci-githubaction/yeni
   pull_request:
     types: 
       - closed
     branches: 
-      - main
+      - ci-githubaction/yeni
     
 env:
   S3_BUCKET_NAME: cointalk-deploy
