@@ -12,9 +12,8 @@ services:
 
 
 before_script:
-  - mysql -e 'CREATE DATABASE eight;'
+  - mysql -e 'CREATE DATABASE IF NOT EXISTS eight;'
   - cp src/main/resources/application.properties.travis src/main/resources/application.properties
-
 
 install:
   - chmod +x ./gradlew
