@@ -7,9 +7,11 @@ branches:
   only:
     - deploy
 
-# gradlew 권한 추가
 before_install:
-  - chmod +x gradlew
+  - mysql -e 'CREATE DATABASE eight;'
+
+install:
+  - chmod +x ./gradlew
 
 # Travis CI 서버의 Home
 cache:
@@ -18,7 +20,14 @@ cache:
     - '$HOME/.gradle'
 
 # Gradle 빌드 명령어 업데이트
-script: "./gradlew clean build"
+script:
+  - ./gradlew clean build
+  - ./gradlew bootRun
+
+env:
+  - SPRING_DATASOURCE_URL=jdbc:mysql://localhost:3306/eight
+    SPRING_DATASOURCE_USERNAME=eight
+    SPRING_DATASOURCE_PASSWORD=eight1886!
 
 # CI 실행 완료시 메일로 알람
 notifications:
