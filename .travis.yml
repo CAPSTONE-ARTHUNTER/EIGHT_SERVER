@@ -1,6 +1,6 @@
 language: java
 jdk:
-  - openjdk8
+  - openjdk17
 
 # Git Push할 Branch
 branches:
@@ -17,6 +17,7 @@ cache:
     - '$HOME/.m2/repository'
     - '$HOME/.gradle'
 
+# Gradle 빌드 명령어 업데이트
 script: "./gradlew clean build"
 
 # CI 실행 완료시 메일로 알람
