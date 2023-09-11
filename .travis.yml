@@ -27,6 +27,7 @@ cache:
 
 # Gradle 빌드 명령어 업데이트
 script:
+  - ./gradlew clean build
   - ./gradlew bootRun
 
 env:
