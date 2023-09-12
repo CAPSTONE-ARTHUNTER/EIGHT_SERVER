@@ -38,8 +38,8 @@ jobs:
       with:
         character set server: 'utf8'
         mysql database: 'eight'
-        mysql user: 'eight'
-        mysql password: 'eight1886!'
+        mysql user: 'root'
+        mysql password: '0776'
         
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
