@@ -3,16 +3,21 @@ name: ArtHunter server CI/CD
 # Controls when the workflow will run
 on:
   push:
-    branches: 
+    branches:
       - ci-githubaction/yeni
   pull_request:
-    types: 
+    types:
       - closed
-    branches: 
+    branches:
       - ci-githubaction/yeni
+
+env:
+  S3_BUCKET_NAME: cointalk-deploy
 
 permissions:
   contents: read
+
+
 
 jobs:
   build:
@@ -25,52 +30,44 @@ jobs:
       JWT_SECRET: ${{secrets.JWT_SECRET}}
 
     steps:
-    - uses: actions/checkout@v2
+      - uses: actions/checkout@v2
 
-    - name: Set up JDK 17
-      uses: actions/setup-java@v3
-      with:
-        java-version: '17'
-        distribution: 'temurin'
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
 
-    - name: Setup MySQL
-      uses: samin/mysql-action@v1
-      with:
-        character set server: 'utf8'
-        mysql database: 'eight'
-        mysql user: 'eight'
-        mysql password: 'eight1886!'
-        
-    - name: Grant execute permission for gradlew
-      run: chmod +x gradlew
-    
-    - name: Build with Gradle
-      run: ./gradlew clean build
+      - name: Setup MySQL
+        uses: samin/mysql-action@v1
+        with:
+          character set server: 'utf8'
+          mysql database: 'eight'
+          mysql user: 'eight'
+          mysql password: 'eight1886!'
 
-    - name: Cache node modules  # node modules 캐싱
-      uses: actions/cache@v1
-      with:
-        path: node_modules
-        key: ${{ runner.OS }}-master-build-${{ hashFiles('**/yarn.lock') }}
-        restore-keys: |
-          ${{ runner.OS }}-build-
-          ${{ runner.OS }}-
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
 
-    - name: Install Dependencies
-      run: yarn
+      - name: Build with Gradle
+        run: ./gradlew clean build
 
-    - name: Build
-      run: yarn build
+      # 빌드 성공하면 해당 프로젝트를 zip로 만듬
+      - name: Make zip file
+        run: zip -r ./<ArtHunter-Application>.zip .
+        shell: bash
 
-    - name: Deploy
-      env:
-        AWS_ACCESS_KEY_ID: ${{secrets.AWS_ACCESS_KEY_ID}}
-        AWS_SECRET_ACCESS_KEY: ${{secrets.AWS_SECRET_ACCESS_KEY}}
-      run: |
-        aws s3 cp \
-          --recursive \
-          --region ap-northeast-2 \
-          dist s3://arthunter-s3-bucket
+      # AWS 계정 설정
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          #  Access key
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          # Secret key
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          # Region
+          aws-region: ${{ secrets.AWS_REGION }}
 
-
-
+      # 만들어 놓은 S3에 해당 zip 파일 저장
+      - name: Upload to S3
+        run: aws s3 cp --region ${{ secrets.AWS_REGION }} ./<ArtHunter-Application>.zip s3://<arthunter-s3-bucket>/<ArtHunter-Application>.zip
