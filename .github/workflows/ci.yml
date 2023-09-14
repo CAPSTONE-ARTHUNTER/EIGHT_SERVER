@@ -72,4 +72,7 @@ jobs:
 
       # 만들어 놓은 S3에 해당 zip 파일 저장
       - name: Upload to S3
-        run: aws s3 cp --region ${{ secrets.AWS_REGION }} ./<arthunter-build>.zip s3://<arthunter-s3-bucket>/<arthunter-build>.zip
+        run: |
+          aws s3 cp \
+            --region ap-northeast-2 \
+            ./spring-build.zip s3://arthunter-s3-bucket
