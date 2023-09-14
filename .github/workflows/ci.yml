@@ -54,8 +54,10 @@ jobs:
 
       # 빌드 성공하면 해당 프로젝트를 zip로 만듬
       - name: Make zip file
-        run: zip -r ./<ArtHunter-Application>.zip .
-        shell: bash
+        run: |
+          mkdir deploy
+          cp ./build/libs/*.jar ./deploy/
+          zip -r -qq -j ./arthunter-build.zip ./deploy
 
       # AWS 계정 설정
       - name: Configure AWS credentials
@@ -70,4 +72,4 @@ jobs:
 
       # 만들어 놓은 S3에 해당 zip 파일 저장
       - name: Upload to S3
-        run: aws s3 cp --region ${{ secrets.AWS_REGION }} ./<ArtHunter-Application>.zip s3://<arthunter-s3-bucket>/<ArtHunter-Application>.zip
+        run: aws s3 cp --region ${{ secrets.AWS_REGION }} ./<arthunter-build>.zip s3://<arthunter-s3-bucket>/<arthunter-build>.zip
