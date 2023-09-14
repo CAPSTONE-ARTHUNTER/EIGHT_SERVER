@@ -62,6 +62,17 @@ public class ArtworkController{
         }
     }
 
+    // 전체 부분 해설 조회 API
+    @GetMapping("parts/{relic_id}")
+    public ResponseEntity<ResponseDto> getPartDescription(@PathVariable("relic_id") Long relicId){
+        PartDescriptionResponseDto partDescriptionResponseDto = artworkService.getPartDescription(relicId);
 
+        ResponseDto responseDto = ResponseDto.builder()
+                .status("success")
+                .message("Get description for each part successful")
+                .data(partDescriptionResponseDto)
+                .build();
 
+        return ResponseEntity.ok(responseDto);
+    }
 }
