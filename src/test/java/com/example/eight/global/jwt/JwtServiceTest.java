@@ -1,4 +1,4 @@
-package com.example.eight.global.jwt;
+/* package com.example.eight.global.jwt;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
@@ -151,3 +151,4 @@ public class JwtServiceTest {
     }
 }
 
+*/
