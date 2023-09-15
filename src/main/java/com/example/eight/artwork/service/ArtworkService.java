@@ -219,6 +219,21 @@ public class ArtworkService {
         return partDescriptionResponseDto;
     }
 
+
+
+    // 유저가 수집완료한 요소 수 가져오는 메소드
+    private int getSolvedElementNum(Long userId, Long partId) {
+        // 부분 찾기
+        Part part = findPart(partId);
+        // 부분의 모든 요소 list
+        List<Element> elementList = elementRepository.findByPart(part);
+
+        return (int) elementList.stream()
+                // 유저의 각 요소 수집 완료여부
+                .filter(element -> solvedElementRepository.existsByUserIdAndElementId(userId, element.getId()))
+                .count();   // true인 것만 카운트
+    }
+
     // 공공 API로 작품의 target 정보 가져오는 메소드
     public String getRelicInfoByAPI(Long relicId, String target) {
         // 작품 id로 작품 찾기
