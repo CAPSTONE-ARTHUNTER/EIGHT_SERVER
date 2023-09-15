@@ -87,8 +87,9 @@ public class ArtworkService {
 
         Relic relic = optionalRelic.get();
 
-        // 작품 이미지 URI 가져오기
+        // 공공 API에서 작품 이미지 URI, 작품 이름 가져오기
         String relicImageUri = getRelicInfoByAPI(relicId, "imgUri");
+        String relicName = getRelicInfoByAPI(relicId, "nameKr");
 
         // 부분 정보 조회 및 변환
         List<Part> parts = partRepository.findByRelic(relic);
@@ -110,7 +111,7 @@ public class ArtworkService {
         int totalSolvedPartCount = (int) partInfoDtos.stream().filter(PartInfoDto::isSolved).count();
 
         PartsResponseDto responseDto = PartsResponseDto.builder()
-                .relicName(relic.getName())
+                .relicName(relicName)
                 .relicImage(relicImageUri)  // 작품 이미지 URI 설정
                 .relicBadgeImage(relic.getBadgeImage())
                 .partInfos(partInfoDtos)
@@ -121,7 +122,7 @@ public class ArtworkService {
         return responseDto;  // 최종 응답 객체
     }
 
-    // part의 각 element 정보와 수집여부 조회 API
+    // 부분의 요소 조회 API (카메라 페이지)
     public ElementResponseDto getElementDetail(Long relicId, Long partId) {
         // 현재 로그인한 유저
         User loginUser = userService.getAuthentication();
@@ -149,9 +150,12 @@ public class ArtworkService {
             elementInfoDtoList.add(elementInfoDto);
         }
 
+        // 공공 API에서 작품 이름 가져오기
+        String relicName = getRelicInfoByAPI(relicId, "nameKr");
+
         // 2. 최종 DTO 생성
         ElementResponseDto elementResponseDto = ElementResponseDto.builder()
-                .relicName(relic.getName())
+                .relicName(relicName)
                 .partName(part.getName())
                 .elementInfoList(elementInfoDtoList)
                 .build();
