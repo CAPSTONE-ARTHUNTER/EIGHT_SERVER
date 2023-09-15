@@ -75,4 +75,19 @@ public class ArtworkController{
 
         return ResponseEntity.ok(responseDto);
     }
+
+    // 부분의 해설 및 요소정보 조회 API
+    @GetMapping("/parts/details/{relic_id}/{part_id}")
+    public ResponseEntity<ResponseDto> getPartDescriptionAndElementInfo(@PathVariable("relic_id") Long relicId, @PathVariable("part_id") Long partId){
+
+        PartDescriptionAndElementResponseDto partDescriptionAndElementResponseDto = artworkService.getPartDescriptionAndElement(relicId, partId);
+
+        ResponseDto responseDto = ResponseDto.builder()
+                .status("success")
+                .message("Get a part description and element list successful")
+                .data(partDescriptionAndElementResponseDto)
+                .build();
+
+        return ResponseEntity.ok(responseDto);
+    }
 }
