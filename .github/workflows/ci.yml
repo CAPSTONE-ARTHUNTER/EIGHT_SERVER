@@ -76,3 +76,10 @@ jobs:
           aws s3 cp \
             --region ap-northeast-2 \
             ./arthunter-build.zip s3://arthunter-s3-bucket
+
+      # codedeploy 실행해 배포
+      - name: Code Deploy
+        run: aws deploy create-deployment --application-name arthunter-codedeploy-app
+          --deployment-config-name CodeDeployDefault.OneAtATime
+          --deployment-group-name arthunter-codedeploy-deployment-group
+          --s3-location bucket=arthunter-s3-bucket,bundleType=zip,key=arthunter-build.zip
