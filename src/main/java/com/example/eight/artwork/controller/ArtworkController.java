@@ -35,9 +35,9 @@ public class ArtworkController{
         return ResponseEntity.ok(responseDto);
     }
 
-    // 부분에 속하는 요소 리스트 & 수집여부 조회
-    @GetMapping("/elements")
-    public ResponseEntity<ResponseDto> getArtworkElements(@RequestParam Long relicId, @RequestParam Long partId){
+    // 부분의 요소목록 조회 (카메라 페이지)
+    @GetMapping("/elements/{relic_id}/{part_id}")
+    public ResponseEntity<ResponseDto> getArtworkElements(@PathVariable("relic_id") Long relicId, @PathVariable("part_id") Long partId){
         // 각 요소 정보 및 수집여부 응답 생성
         ElementResponseDto elementResponseDto = artworkService.getElementDetail(relicId, partId);
 
