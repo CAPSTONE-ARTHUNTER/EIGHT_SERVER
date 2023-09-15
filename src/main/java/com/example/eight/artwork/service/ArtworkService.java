@@ -9,10 +9,6 @@ import com.example.eight.user.service.UserService;
 import jakarta.persistence.EntityNotFoundException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nimbusds.jose.shaded.gson.Gson;
-import com.nimbusds.jose.shaded.gson.JsonElement;
-import com.nimbusds.jose.shaded.gson.JsonObject;
-import com.nimbusds.jose.shaded.gson.JsonParser;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.text.similarity.JaroWinklerDistance;
 import org.springframework.stereotype.Service;
@@ -25,8 +21,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 
 @Service
 @Transactional
@@ -333,80 +327,72 @@ public class ArtworkService {
     // 태그 인식 API
     public TagResponseDto performTagRecognition(TagRequestDto requestDto) {
         String detectedTag = requestDto.getText();
+        // 응답 객체 생성 전 변수 초기화
+        String bestMatchingApiId = null;
+        Long dbId = null;
+        String name = null;
 
-        // 데이터베이스에서 태그와 일치하는 작품 정보 조회
-        Relic relic = relicRepository.findByName(detectedTag);
+        // 태그와 유사한 작품명 찾기
+        List<Long> allArtworkApiIds = getAllArtworkApiIds();    // db에 저장된 모든 작품의 api id 리스트
+        bestMatchingApiId = findBestMatchingId(detectedTag, allArtworkApiIds);  // 찾은 작품의 api id
 
-        // 응답 객체 생성 전 relicId 변수 초기화
-        Long relicId;
-        String bestMatchingName = null;
+        if (bestMatchingApiId != null) {
+            // 찾은 api id로 작품 객체 가져오기
+            Optional<Relic> optionalRelic = relicRepository.findByApiId(bestMatchingApiId);
+            Relic relic = optionalRelic.get();
 
-        // 데이터베이스에 태그와 일치하는 작품명이 있는 경우
-        if (relic != null) {
-            // ID 설정
-            relicId = relic.getId();
-            bestMatchingName = detectedTag;
-        } else {
-            // 데이터베이스에 태그와 일치하는 작품명이 없을 때, 유사한 작품명 찾기
-            List<String> allArtworkNames = getAllArtworkNames();
-            bestMatchingName = findBestMatchingName(detectedTag, allArtworkNames);
-
-            if (bestMatchingName != null) {
-                // ID 설정
-                relic = relicRepository.findByName(bestMatchingName);
-                if (relic != null) {
-                    relicId = relic.getId();
-                } else {
-                    relicId = null;
-                }
-            } else {
-                // 유사한 작품명도 없을 경우
-                relicId = null;
-            }
+            // db의 작품 id 가져오기
+            dbId = relic.getId();
+            // 작품명 가져오기
+            name = getRelicInfoByAPI(dbId, "nameKr");
         }
 
         // 응답 객체 생성
-        if (relicId != null) {
+        if (name != null) {
             return TagResponseDto.builder()
-                    .id(relicId)
-                    .name(bestMatchingName)  // 유사한 작품명 사용
+                    .id(dbId)
+                    .name(name)  // 유사한 작품명 사용
                     .build();
         } else {
             return null;  // 유사한 작품명을 찾지 못한 경우
         }
     }
 
-    // 모든 작품명 가져오기
-    private List<String> getAllArtworkNames() {
+    // 작품의 모든 apiID 가져오기
+    private List<Long> getAllArtworkApiIds() {
         List<Relic> relics = relicRepository.findAll();
-        List<String> artworkNames = new ArrayList<>();
+        List<Long> artworkIds = new ArrayList<>();
 
         for (Relic relic : relics) {
-            artworkNames.add(relic.getName());
+            artworkIds.add(relic.getId());
         }
 
-        return artworkNames;
+        return artworkIds;
     }
 
     // 유사한 작품명 찾기
     // Jaro-Winkler 유사도 계산
-    private String findBestMatchingName(String detectedTag, List<String> artworkNames) {
-        String bestMatchingName = null;
+    private String findBestMatchingId(String detectedTag, List<Long> relicApiIds) {
+        String bestMatchingId = null;
         double maxSimilarity = 0.0;
 
         JaroWinklerDistance jaroWinklerDistance = new JaroWinklerDistance();
 
-        for (String name : artworkNames) {
-            // 유사도 계산
-            double similarity = jaroWinklerDistance.apply(detectedTag, name);
+        for (Long id : relicApiIds) {
+            String foundName = getRelicInfoByAPI(id,"nameKr");  // 작품명
+            String foundApiId = getRelicInfoByAPI(id,"id");     // 공공 api의 작품 id
+
+            // 작품명으로 유사도 계산
+            double similarity = jaroWinklerDistance.apply(detectedTag, foundName);
             if (similarity > maxSimilarity) {
-                // 더 큰 유사도를 찾았을 경우 값을 업데이트하고 작품명 저장
+                // 더 큰 유사도를 찾았을 경우 값을 업데이트하고 api id 저장
                 maxSimilarity = similarity;
-                bestMatchingName = name;
+                bestMatchingId = foundApiId;
+
             }
         }
 
-        return bestMatchingName;  // 가장 유사한 작품명 반환
+        return bestMatchingId;  // 가장 유사한 작품명의 api id 반환
     }
 
 }
