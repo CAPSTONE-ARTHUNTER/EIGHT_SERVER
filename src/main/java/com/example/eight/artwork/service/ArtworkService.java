@@ -1,10 +1,7 @@
 package com.example.eight.artwork.service;
 
 import com.example.eight.artwork.dto.*;
-import com.example.eight.artwork.entity.Element;
-import com.example.eight.artwork.entity.Part;
-import com.example.eight.artwork.entity.Relic;
-import com.example.eight.artwork.entity.SolvedElement;
+import com.example.eight.artwork.entity.*;
 import com.example.eight.artwork.repository.*;
 
 import com.example.eight.user.entity.User;
@@ -219,7 +216,59 @@ public class ArtworkService {
         return partDescriptionResponseDto;
     }
 
+    // 부분의 해설 및 요소정보 조회 API
+    public PartDescriptionAndElementResponseDto getPartDescriptionAndElement(Long relicId, Long partId){
+        // 현재 로그인한 유저
+        User loginUser = userService.getAuthentication();
+        // 작품과 부분
+        Relic relic = findRelic(relicId);
+        Part part = findPart(partId);
 
+        // 1. 부분 수집여부 확인
+        boolean part_isSolved = solvedPartRepository.existsByUserIdAndPartId(loginUser.getId(), partId);
+        // 2. 수집한 요소 수 가져오기
+        int solvedElementNum = getSolvedElementNum(loginUser.getId(), partId);
+
+        // 3. 부분의 요소 리스트 가져와서, 각 요소마다 요소정보 DTO 생성
+        List<Element> elementList = elementRepository.findByPart(part);
+        List<ElementInfoAndPointDto> elementInfoAndPointDtoList = new ArrayList<>();
+
+        for(Element element: elementList){
+            // 로그인한 유저의 각 요소 수집 완료여부 확인
+            boolean element_isSolved = solvedElementRepository.existsByUserIdAndElementId(loginUser.getId(), element.getId());
+
+            ElementInfoAndPointDto elementInfoAndPointDto = ElementInfoAndPointDto.builder()
+                    .id(element.getId())
+                    .point(element.getPoint())
+                    .isSolved(element_isSolved)
+                    .build();
+
+            // 요소 정보를 요소 리스트에 추가
+            elementInfoAndPointDtoList.add(elementInfoAndPointDto);
+        }
+
+        // 4. 공공 API에서 작품 정보 가져오기
+        String relicImage = getRelicInfoByAPI(relicId,"imgUri");
+        String relicName = getRelicInfoByAPI(relicId,"nameKr");
+
+        // 5. 최종 DTO 생성
+        PartDescriptionAndElementResponseDto partDescriptionAndElementResponseDto = PartDescriptionAndElementResponseDto.builder()
+                // 작품 정보
+                .relicId(relic.getId())
+                .relicImage(relicImage)
+                .relicName(relicName)
+                // 부분 정보
+                .partName(part.getName())
+                .partDescription(part.getTextDescription())
+                .part_isSolved(part_isSolved)
+                // 요소 정보
+                .elementNum(part.getElementNum())
+                .elementSolvedNum(solvedElementNum)
+                .elementList(elementInfoAndPointDtoList)
+                .build();
+
+        return partDescriptionAndElementResponseDto;
+    }
 
     // 유저가 수집완료한 요소 수 가져오는 메소드
     private int getSolvedElementNum(Long userId, Long partId) {
