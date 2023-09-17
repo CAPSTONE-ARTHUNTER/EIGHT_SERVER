@@ -38,14 +38,6 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Setup MySQL
-        uses: samin/mysql-action@v1
-        with:
-          character set server: 'utf8'
-          mysql database: 'eight'
-          mysql user: 'eight'
-          mysql password: 'eight1886!'
-
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
