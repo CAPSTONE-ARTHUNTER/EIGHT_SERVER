@@ -28,6 +28,9 @@ jobs:
       GOOGLE_CLIENT_ID: ${{secrets.GOOGLE_CLIENT_ID}}
       GOOGLE_CLIENT_SECRET: ${{secrets.GOOGLE_CLIENT_SECRET}}
       JWT_SECRET: ${{secrets.JWT_SECRET}}
+      DATABASE_USERNAME: ${{secrets.DATABASE_USERNAME}}
+      DATABASE_PASSWORD: ${{secrets.DATABASE_PASSWORD}}
+      DATABASE_URL: ${{secrets.DATABASE_URL}}
 
     steps:
       - uses: actions/checkout@v2
@@ -37,6 +40,13 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
+
+      - name: Setup MySQL
+        uses: samin/mysql-action@v1
+        with:
+          mysql user: ${{secrets.DATABASE_USERNAME}}
+          mysql password: ${{secrets.DATABASE_PASSWORD}}
+          mysql database: ${{secrets.DATABASE_URL}}
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
