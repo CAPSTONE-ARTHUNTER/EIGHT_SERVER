@@ -41,13 +41,6 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Setup MySQL
-        uses: samin/mysql-action@v1
-        with:
-          mysql user: ${{secrets.DATABASE_USERNAME}}
-          mysql password: ${{secrets.DATABASE_PASSWORD}}
-          mysql database: ${{secrets.DATABASE_URL}}
-
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
