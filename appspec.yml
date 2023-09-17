@@ -11,3 +11,9 @@ permissions:
     pattern: "**" # 매칭되는 패턴에만 권한 부여
     owner: ubuntu # object 소유자
     group: ubuntu # object의 그룹 이름
+
+hooks:
+  ApplicationStart:
+    - location: /scripts/deploy.sh
+      timeout: 60
+      runas: ubuntu
