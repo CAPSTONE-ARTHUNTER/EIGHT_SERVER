@@ -23,12 +23,6 @@ public class SolvedPart implements Serializable {
     @JoinColumn(name = "part_id", nullable = false)
     private Part part;
 
-    @Column(name = "is_solved", nullable = false)
-    private boolean isSolved;
-
-    @Column(name = "solved_element_num", nullable = false)
-    private int solvedElementNum;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     private User user;
@@ -37,10 +31,8 @@ public class SolvedPart implements Serializable {
     private LocalDateTime solvedAt;
 
     @Builder
-    public SolvedPart(Part part, boolean isSolved, int solvedElementNum, User user, LocalDateTime solvedAt) {
+    public SolvedPart(Part part, User user, LocalDateTime solvedAt) {
         this.part = part;
-        this.isSolved = isSolved;
-        this.solvedElementNum = solvedElementNum;
         this.user = user;
         this.solvedAt = solvedAt;
     }
