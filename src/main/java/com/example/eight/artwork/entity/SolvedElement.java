@@ -23,9 +23,6 @@ public class SolvedElement implements Serializable {
     @JoinColumn(name = "element_id", nullable = false)
     private Element element;
 
-    @Column(name = "is_solved", nullable = false)
-    private boolean isSolved;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     private User user;
@@ -34,9 +31,8 @@ public class SolvedElement implements Serializable {
     private LocalDateTime solvedAt;
 
     @Builder
-    public SolvedElement(Element element, boolean isSolved, User user, LocalDateTime solvedAt) {
+    public SolvedElement(Element element, User user, LocalDateTime solvedAt) {
         this.element = element;
-        this.isSolved = isSolved;
         this.user = user;
         this.solvedAt = solvedAt;
     }

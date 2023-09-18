@@ -62,7 +62,6 @@ public class ArtworkService {
     private void saveSolvedElement(Element element) {
         SolvedElement solvedElement = SolvedElement.builder()
                 .element(element)
-                .isSolved(true)
                 .solvedAt(LocalDateTime.now())
                 .build();
         solvedElementRepository.save(solvedElement);
