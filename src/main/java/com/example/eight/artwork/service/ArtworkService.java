@@ -1,10 +1,7 @@
 package com.example.eight.artwork.service;
 
 import com.example.eight.artwork.dto.*;
-import com.example.eight.artwork.entity.Element;
-import com.example.eight.artwork.entity.Part;
-import com.example.eight.artwork.entity.Relic;
-import com.example.eight.artwork.entity.SolvedElement;
+import com.example.eight.artwork.entity.*;
 import com.example.eight.artwork.repository.*;
 
 import com.example.eight.user.entity.User;
@@ -12,10 +9,6 @@ import com.example.eight.user.service.UserService;
 import jakarta.persistence.EntityNotFoundException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nimbusds.jose.shaded.gson.Gson;
-import com.nimbusds.jose.shaded.gson.JsonElement;
-import com.nimbusds.jose.shaded.gson.JsonObject;
-import com.nimbusds.jose.shaded.gson.JsonParser;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.text.similarity.JaroWinklerDistance;
 import org.springframework.stereotype.Service;
@@ -28,8 +21,6 @@ import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 
 @Service
 @Transactional
@@ -90,8 +81,9 @@ public class ArtworkService {
 
         Relic relic = optionalRelic.get();
 
-        // 작품 이미지 URI 가져오기
+        // 공공 API에서 작품 이미지 URI, 작품 이름 가져오기
         String relicImageUri = getRelicInfoByAPI(relicId, "imgUri");
+        String relicName = getRelicInfoByAPI(relicId, "nameKr");
 
         // 부분 정보 조회 및 변환
         List<Part> parts = partRepository.findByRelic(relic);
@@ -113,7 +105,7 @@ public class ArtworkService {
         int totalSolvedPartCount = (int) partInfoDtos.stream().filter(PartInfoDto::isSolved).count();
 
         PartsResponseDto responseDto = PartsResponseDto.builder()
-                .relicName(relic.getName())
+                .relicName(relicName)
                 .relicImage(relicImageUri)  // 작품 이미지 URI 설정
                 .relicBadgeImage(relic.getBadgeImage())
                 .partInfos(partInfoDtos)
@@ -124,7 +116,7 @@ public class ArtworkService {
         return responseDto;  // 최종 응답 객체
     }
 
-    // part의 각 element 정보와 수집여부 조회 API
+    // 부분의 요소 조회 API (카메라 페이지)
     public ElementResponseDto getElementDetail(Long relicId, Long partId) {
         // 현재 로그인한 유저
         User loginUser = userService.getAuthentication();
@@ -152,9 +144,12 @@ public class ArtworkService {
             elementInfoDtoList.add(elementInfoDto);
         }
 
+        // 공공 API에서 작품 이름 가져오기
+        String relicName = getRelicInfoByAPI(relicId, "nameKr");
+
         // 2. 최종 DTO 생성
         ElementResponseDto elementResponseDto = ElementResponseDto.builder()
-                .relicName(relic.getName())
+                .relicName(relicName)
                 .partName(part.getName())
                 .elementInfoList(elementInfoDtoList)
                 .build();
@@ -219,6 +214,73 @@ public class ArtworkService {
         return partDescriptionResponseDto;
     }
 
+    // 부분의 해설 및 요소정보 조회 API
+    public PartDescriptionAndElementResponseDto getPartDescriptionAndElement(Long relicId, Long partId){
+        // 현재 로그인한 유저
+        User loginUser = userService.getAuthentication();
+        // 작품과 부분
+        Relic relic = findRelic(relicId);
+        Part part = findPart(partId);
+
+        // 1. 부분 수집여부 확인
+        boolean part_isSolved = solvedPartRepository.existsByUserIdAndPartId(loginUser.getId(), partId);
+        // 2. 수집한 요소 수 가져오기
+        int solvedElementNum = getSolvedElementNum(loginUser.getId(), partId);
+
+        // 3. 부분의 요소 리스트 가져와서, 각 요소마다 요소정보 DTO 생성
+        List<Element> elementList = elementRepository.findByPart(part);
+        List<ElementInfoAndPointDto> elementInfoAndPointDtoList = new ArrayList<>();
+
+        for(Element element: elementList){
+            // 로그인한 유저의 각 요소 수집 완료여부 확인
+            boolean element_isSolved = solvedElementRepository.existsByUserIdAndElementId(loginUser.getId(), element.getId());
+
+            ElementInfoAndPointDto elementInfoAndPointDto = ElementInfoAndPointDto.builder()
+                    .id(element.getId())
+                    .point(element.getPoint())
+                    .isSolved(element_isSolved)
+                    .build();
+
+            // 요소 정보를 요소 리스트에 추가
+            elementInfoAndPointDtoList.add(elementInfoAndPointDto);
+        }
+
+        // 4. 공공 API에서 작품 정보 가져오기
+        String relicImage = getRelicInfoByAPI(relicId,"imgUri");
+        String relicName = getRelicInfoByAPI(relicId,"nameKr");
+
+        // 5. 최종 DTO 생성
+        PartDescriptionAndElementResponseDto partDescriptionAndElementResponseDto = PartDescriptionAndElementResponseDto.builder()
+                // 작품 정보
+                .relicId(relic.getId())
+                .relicImage(relicImage)
+                .relicName(relicName)
+                // 부분 정보
+                .partName(part.getName())
+                .partDescription(part.getTextDescription())
+                .part_isSolved(part_isSolved)
+                // 요소 정보
+                .elementNum(part.getElementNum())
+                .elementSolvedNum(solvedElementNum)
+                .elementList(elementInfoAndPointDtoList)
+                .build();
+
+        return partDescriptionAndElementResponseDto;
+    }
+
+    // 유저가 수집완료한 요소 수 가져오는 메소드
+    private int getSolvedElementNum(Long userId, Long partId) {
+        // 부분 찾기
+        Part part = findPart(partId);
+        // 부분의 모든 요소 list
+        List<Element> elementList = elementRepository.findByPart(part);
+
+        return (int) elementList.stream()
+                // 유저의 각 요소 수집 완료여부
+                .filter(element -> solvedElementRepository.existsByUserIdAndElementId(userId, element.getId()))
+                .count();   // true인 것만 카운트
+    }
+
     // 공공 API로 작품의 target 정보 가져오는 메소드
     public String getRelicInfoByAPI(Long relicId, String target) {
         // 작품 id로 작품 찾기
@@ -265,80 +327,72 @@ public class ArtworkService {
     // 태그 인식 API
     public TagResponseDto performTagRecognition(TagRequestDto requestDto) {
         String detectedTag = requestDto.getText();
+        // 응답 객체 생성 전 변수 초기화
+        String bestMatchingApiId = null;
+        Long dbId = null;
+        String name = null;
 
-        // 데이터베이스에서 태그와 일치하는 작품 정보 조회
-        Relic relic = relicRepository.findByName(detectedTag);
+        // 태그와 유사한 작품명 찾기
+        List<Long> allArtworkApiIds = getAllArtworkApiIds();    // db에 저장된 모든 작품의 api id 리스트
+        bestMatchingApiId = findBestMatchingId(detectedTag, allArtworkApiIds);  // 찾은 작품의 api id
 
-        // 응답 객체 생성 전 relicId 변수 초기화
-        Long relicId;
-        String bestMatchingName = null;
+        if (bestMatchingApiId != null) {
+            // 찾은 api id로 작품 객체 가져오기
+            Optional<Relic> optionalRelic = relicRepository.findByApiId(bestMatchingApiId);
+            Relic relic = optionalRelic.get();
 
-        // 데이터베이스에 태그와 일치하는 작품명이 있는 경우
-        if (relic != null) {
-            // ID 설정
-            relicId = relic.getId();
-            bestMatchingName = detectedTag;
-        } else {
-            // 데이터베이스에 태그와 일치하는 작품명이 없을 때, 유사한 작품명 찾기
-            List<String> allArtworkNames = getAllArtworkNames();
-            bestMatchingName = findBestMatchingName(detectedTag, allArtworkNames);
-
-            if (bestMatchingName != null) {
-                // ID 설정
-                relic = relicRepository.findByName(bestMatchingName);
-                if (relic != null) {
-                    relicId = relic.getId();
-                } else {
-                    relicId = null;
-                }
-            } else {
-                // 유사한 작품명도 없을 경우
-                relicId = null;
-            }
+            // db의 작품 id 가져오기
+            dbId = relic.getId();
+            // 작품명 가져오기
+            name = getRelicInfoByAPI(dbId, "nameKr");
         }
 
         // 응답 객체 생성
-        if (relicId != null) {
+        if (name != null) {
             return TagResponseDto.builder()
-                    .id(relicId)
-                    .name(bestMatchingName)  // 유사한 작품명 사용
+                    .id(dbId)
+                    .name(name)  // 유사한 작품명 사용
                     .build();
         } else {
             return null;  // 유사한 작품명을 찾지 못한 경우
         }
     }
 
-    // 모든 작품명 가져오기
-    private List<String> getAllArtworkNames() {
+    // 작품의 모든 apiID 가져오기
+    private List<Long> getAllArtworkApiIds() {
         List<Relic> relics = relicRepository.findAll();
-        List<String> artworkNames = new ArrayList<>();
+        List<Long> artworkIds = new ArrayList<>();
 
         for (Relic relic : relics) {
-            artworkNames.add(relic.getName());
+            artworkIds.add(relic.getId());
         }
 
-        return artworkNames;
+        return artworkIds;
     }
 
     // 유사한 작품명 찾기
     // Jaro-Winkler 유사도 계산
-    private String findBestMatchingName(String detectedTag, List<String> artworkNames) {
-        String bestMatchingName = null;
+    private String findBestMatchingId(String detectedTag, List<Long> relicApiIds) {
+        String bestMatchingId = null;
         double maxSimilarity = 0.0;
 
         JaroWinklerDistance jaroWinklerDistance = new JaroWinklerDistance();
 
-        for (String name : artworkNames) {
-            // 유사도 계산
-            double similarity = jaroWinklerDistance.apply(detectedTag, name);
+        for (Long id : relicApiIds) {
+            String foundName = getRelicInfoByAPI(id,"nameKr");  // 작품명
+            String foundApiId = getRelicInfoByAPI(id,"id");     // 공공 api의 작품 id
+
+            // 작품명으로 유사도 계산
+            double similarity = jaroWinklerDistance.apply(detectedTag, foundName);
             if (similarity > maxSimilarity) {
-                // 더 큰 유사도를 찾았을 경우 값을 업데이트하고 작품명 저장
+                // 더 큰 유사도를 찾았을 경우 값을 업데이트하고 api id 저장
                 maxSimilarity = similarity;
-                bestMatchingName = name;
+                bestMatchingId = foundApiId;
+
             }
         }
 
-        return bestMatchingName;  // 가장 유사한 작품명 반환
+        return bestMatchingId;  // 가장 유사한 작품명의 api id 반환
     }
 
 }

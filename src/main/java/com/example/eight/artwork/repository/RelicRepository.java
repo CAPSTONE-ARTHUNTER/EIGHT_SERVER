@@ -9,7 +9,6 @@ import java.util.List;
 
 @Repository
 public interface RelicRepository extends JpaRepository<Relic, Long> {
-    Relic findByName(String name);
 
     Optional<Relic> findByApiId(String apiId);
 
