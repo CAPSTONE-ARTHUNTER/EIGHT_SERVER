@@ -49,19 +49,22 @@ public class ArtworkService {
         }
     }
     private Element validateAndRecordElement(DetectionRequestDto requestDto) {
+        // 로그인한 유저
+        User loginUser = userService.getAuthentication();
         String elementName = requestDto.getName();
         Element element = elementRepository.findByName(elementName);
 
         if (element != null) {
-            saveSolvedElement(element);
+            saveSolvedElement(loginUser, element);
         }
 
         return element;
     }
 
-    private void saveSolvedElement(Element element) {
+    private void saveSolvedElement(User loginUser, Element element) {
         SolvedElement solvedElement = SolvedElement.builder()
                 .element(element)
+                .user(loginUser)
                 .solvedAt(LocalDateTime.now())
                 .build();
         solvedElementRepository.save(solvedElement);
