@@ -37,4 +37,8 @@ public class SolvedPart implements Serializable {
         this.solvedAt = solvedAt;
     }
 
+    public void updateSolvedAt(LocalDateTime solvedAt){
+        this.solvedAt = solvedAt;
+    }
+
 }
