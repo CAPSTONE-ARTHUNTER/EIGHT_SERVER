@@ -23,12 +23,6 @@ public class SolvedRelic implements Serializable {
     @JoinColumn(name = "relic_id", nullable = false)
     private Relic relic;
 
-    @Column(name = "is_solved", nullable = false)
-    private boolean isSolved;
-
-    @Column(name = "solved_part_num", nullable = false)
-    private int solvedPartNum;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", referencedColumnName = "id")
     private User user;
@@ -37,11 +31,13 @@ public class SolvedRelic implements Serializable {
     private LocalDateTime solvedAt;
 
     @Builder
-    public SolvedRelic(Relic relic, boolean isSolved, int solvedPartNum, User user, LocalDateTime solvedAt) {
+    public SolvedRelic(Relic relic, User user, LocalDateTime solvedAt) {
         this.relic = relic;
-        this.isSolved = isSolved;
-        this.solvedPartNum = solvedPartNum;
         this.user = user;
+        this.solvedAt = solvedAt;
+    }
+
+    public void updateSolvedAt(LocalDateTime solvedAt){
         this.solvedAt = solvedAt;
     }
 

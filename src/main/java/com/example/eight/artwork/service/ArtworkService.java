@@ -10,6 +10,7 @@ import jakarta.persistence.EntityNotFoundException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.text.similarity.JaroWinklerDistance;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -32,6 +34,7 @@ public class ArtworkService {
     private final SolvedElementRepository solvedElementRepository;
     private final PartRepository partRepository;
     private final SolvedPartRepository solvedPartRepository;
+    private final SolvedRelicRepository solvedRelicRepository;
     private final UserService userService;
 
     // 요소 인식 API
@@ -49,23 +52,104 @@ public class ArtworkService {
         }
     }
     private Element validateAndRecordElement(DetectionRequestDto requestDto) {
+        // 로그인한 유저
+        User loginUser = userService.getAuthentication();
+
+        // 인식한 요소의 name이 DB에 있다면 solvedElement 테이블에 기록
         String elementName = requestDto.getName();
         Element element = elementRepository.findByName(elementName);
-
         if (element != null) {
-            saveSolvedElement(element);
+            saveSolvedElement(loginUser, element);
+
+            // 유저가 해당 part의 모든 element를 수집했다면 solvedPart 테이블에 기록
+            Part part = element.getPart();
+            if (isPartSolved(loginUser, part)) {
+                saveSolvedPart(loginUser, part);
+                log.info("부분 수집 완료 - 부분 name : {}", part.getName());
+
+                // 유저가 해당 relic의 모든 part를 수집했다면 solvedRelic 테이블에 기록
+                Relic relic = part.getRelic();
+                if(isRelicSolved(loginUser, relic)){
+                    saveSolvedRelic(loginUser, relic);
+                    log.info("작품 수집 완료 - 작품 id : {}", relic.getId());
+                }
+            }
         }
 
         return element;
     }
 
-    private void saveSolvedElement(Element element) {
-        SolvedElement solvedElement = SolvedElement.builder()
-                .element(element)
-                .isSolved(true)
-                .solvedAt(LocalDateTime.now())
-                .build();
-        solvedElementRepository.save(solvedElement);
+    private void saveSolvedElement(User loginUser, Element element) {
+        // 유저가 해당 element를 이미 수집한 적이 있다면, solvedAt만 업데이트
+        SolvedElement solvedElement = solvedElementRepository.findByUserIdAndElementId(loginUser.getId(), element.getId());
+        if( solvedElement != null){
+            log.info("이미 수집했던 Element 입니다. 수집시각만 업데이트 합니다.");
+            solvedElement.updateSolvedAt(LocalDateTime.now());
+        }
+        // 해당 element를 처음 수집하는 경우, 새로 수집기록 저장
+        else {
+            log.info("처음 수집하는 Element 입니다. 데이터를 새로 저장합니다.");
+            SolvedElement newSolvedElement = SolvedElement.builder()
+                    .element(element)
+                    .user(loginUser)
+                    .solvedAt(LocalDateTime.now())
+                    .build();
+            solvedElementRepository.save(newSolvedElement);
+        }
+    }
+
+    private void saveSolvedPart(User loginUser, Part part){
+        // 유저가 해당 part를 이미 수집한 적이 있다면, solvedAt만 업데이트
+        SolvedPart solvedPart = solvedPartRepository.findByUserIdAndPartId(loginUser.getId(), part.getId());
+        if( solvedPart != null){
+            log.info("이미 수집했던 Part 입니다. 수집시각만 업데이트 합니다.");
+            solvedPart.updateSolvedAt(LocalDateTime.now());
+        }
+        // 해당 part를 처음 수집하는 경우, 새로 수집기록 저장
+        else {
+            SolvedPart newSolvedPart = SolvedPart.builder()
+                    .part(part)
+                    .user(loginUser)
+                    .solvedAt(LocalDateTime.now())
+                    .build();
+
+            solvedPartRepository.save(newSolvedPart);
+        }
+    }
+
+    private void saveSolvedRelic(User loginUser, Relic relic){
+        // 유저가 해당 relic을 이미 수집한 적이 있다면, solvedAt만 업데이트
+        SolvedRelic solvedRelic = solvedRelicRepository.findByUserIdAndRelicId(loginUser.getId(), relic.getId());
+        if( solvedRelic != null){
+            log.info("이미 수집했던 Relic 입니다. 수집시각만 업데이트 합니다.");
+            solvedRelic.updateSolvedAt(LocalDateTime.now());
+        }
+        // 해당 relic을 처음 수집하는 경우, 새로 수집기록 저장
+        else {
+            SolvedRelic newSolvedRelic = SolvedRelic.builder()
+                    .relic(relic)
+                    .user(loginUser)
+                    .solvedAt(LocalDateTime.now())
+                    .build();
+
+            solvedRelicRepository.save(newSolvedRelic);
+        }
+    }
+
+    private boolean isPartSolved(User loginUser, Part part){
+        int solvedElementNum = getSolvedElementNum(loginUser.getId(),part.getId());   // 유저가 해당 part 중 수집한 element 개수
+        int elementNum = part.getElementNum();  // 해당 part의 총 element 개수
+
+        // 해당 part의 총 요소 개수와 유저가 수집한 요소 개수 동일한지 여부 리턴
+        return (solvedElementNum == elementNum);
+    }
+
+    private boolean isRelicSolved(User loginUser, Relic relic){
+        int solvedPartNum = getSolvedPartNum(loginUser.getId(), relic.getId());   // 유저가 해당 relic 중 수집한 part 개수
+        int partNum = relic.getPartNum();   // 해당 relic의 총 part 개수
+
+        // 해당 relic의 부분 개수와 유저가 수집한 부분 개수가 동일한지 여부 리턴
+        return (solvedPartNum == partNum);
     }
 
     // 작품 소제목 조회 API
@@ -278,6 +362,19 @@ public class ArtworkService {
         return (int) elementList.stream()
                 // 유저의 각 요소 수집 완료여부
                 .filter(element -> solvedElementRepository.existsByUserIdAndElementId(userId, element.getId()))
+                .count();   // true인 것만 카운트
+    }
+
+    // 유저가 수집완료한 부분 수 가져오는 메소드
+    private int getSolvedPartNum(Long userId, Long relicId) {
+        // 작품 찾기
+        Relic relic = findRelic(relicId);
+        // 작품의 모든 부분 list
+        List<Part> partList = partRepository.findByRelic(relic);
+
+        return (int) partList.stream()
+                // 유저의 각 부분 수집 완료여부
+                .filter(part -> solvedPartRepository.existsByUserIdAndPartId(userId, part.getId()))
                 .count();   // true인 것만 카운트
     }
 
