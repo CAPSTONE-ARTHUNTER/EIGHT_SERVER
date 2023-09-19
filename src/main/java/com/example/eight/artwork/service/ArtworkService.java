@@ -10,6 +10,7 @@ import jakarta.persistence.EntityNotFoundException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.text.similarity.JaroWinklerDistance;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 @Service
 @Transactional
 @RequiredArgsConstructor
@@ -78,32 +80,60 @@ public class ArtworkService {
     }
 
     private void saveSolvedElement(User loginUser, Element element) {
-        SolvedElement solvedElement = SolvedElement.builder()
-                .element(element)
-                .user(loginUser)
-                .solvedAt(LocalDateTime.now())
-                .build();
-        solvedElementRepository.save(solvedElement);
+        // 유저가 해당 element를 이미 수집한 적이 있다면, solvedAt만 업데이트
+        SolvedElement solvedElement = solvedElementRepository.findByUserIdAndElementId(loginUser.getId(), element.getId());
+        if( solvedElement != null){
+            log.info("이미 수집했던 Element 입니다. 수집시각만 업데이트 합니다.");
+            solvedElement.updateSolvedAt(LocalDateTime.now());
+        }
+        // 해당 element를 처음 수집하는 경우, 새로 수집기록 저장
+        else {
+            log.info("처음 수집하는 Element 입니다. 데이터를 새로 저장합니다.");
+            SolvedElement newSolvedElement = SolvedElement.builder()
+                    .element(element)
+                    .user(loginUser)
+                    .solvedAt(LocalDateTime.now())
+                    .build();
+            solvedElementRepository.save(newSolvedElement);
+        }
     }
 
     private void saveSolvedPart(User loginUser, Part part){
-        SolvedPart solvedPart = SolvedPart.builder()
-                .part(part)
-                .user(loginUser)
-                .solvedAt(LocalDateTime.now())
-                .build();
+        // 유저가 해당 part를 이미 수집한 적이 있다면, solvedAt만 업데이트
+        SolvedPart solvedPart = solvedPartRepository.findByUserIdAndPartId(loginUser.getId(), part.getId());
+        if( solvedPart != null){
+            log.info("이미 수집했던 Part 입니다. 수집시각만 업데이트 합니다.");
+            solvedPart.updateSolvedAt(LocalDateTime.now());
+        }
+        // 해당 part를 처음 수집하는 경우, 새로 수집기록 저장
+        else {
+            SolvedPart newSolvedPart = SolvedPart.builder()
+                    .part(part)
+                    .user(loginUser)
+                    .solvedAt(LocalDateTime.now())
+                    .build();
 
-        solvedPartRepository.save(solvedPart);
+            solvedPartRepository.save(newSolvedPart);
+        }
     }
 
     private void saveSolvedRelic(User loginUser, Relic relic){
-        SolvedRelic solvedRelic = SolvedRelic.builder()
-                .relic(relic)
-                .user(loginUser)
-                .solvedAt(LocalDateTime.now())
-                .build();
+        // 유저가 해당 relic을 이미 수집한 적이 있다면, solvedAt만 업데이트
+        SolvedRelic solvedRelic = solvedRelicRepository.findByUserIdAndRelicId(loginUser.getId(), relic.getId());
+        if( solvedRelic != null){
+            log.info("이미 수집했던 Relic 입니다. 수집시각만 업데이트 합니다.");
+            solvedRelic.updateSolvedAt(LocalDateTime.now());
+        }
+        // 해당 relic을 처음 수집하는 경우, 새로 수집기록 저장
+        else {
+            SolvedRelic newSolvedRelic = SolvedRelic.builder()
+                    .relic(relic)
+                    .user(loginUser)
+                    .solvedAt(LocalDateTime.now())
+                    .build();
 
-        solvedRelicRepository.save(solvedRelic);
+            solvedRelicRepository.save(newSolvedRelic);
+        }
     }
 
     private boolean isPartSolved(User loginUser, Part part){
