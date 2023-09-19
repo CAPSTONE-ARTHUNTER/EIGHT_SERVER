@@ -32,6 +32,7 @@ public class ArtworkService {
     private final SolvedElementRepository solvedElementRepository;
     private final PartRepository partRepository;
     private final SolvedPartRepository solvedPartRepository;
+    private final SolvedRelicRepository solvedRelicRepository;
     private final UserService userService;
 
     // 요소 인식 API
@@ -63,6 +64,13 @@ public class ArtworkService {
             if (isPartSolved(loginUser, part)) {
                 saveSolvedPart(loginUser, part);
                 log.info("부분 수집 완료 - 부분 name : {}", part.getName());
+
+                // 유저가 해당 relic의 모든 part를 수집했다면 solvedRelic 테이블에 기록
+                Relic relic = part.getRelic();
+                if(isRelicSolved(loginUser, relic)){
+                    saveSolvedRelic(loginUser, relic);
+                    log.info("작품 수집 완료 - 작품 id : {}", relic.getId());
+                }
             }
         }
 
@@ -87,6 +95,17 @@ public class ArtworkService {
 
         solvedPartRepository.save(solvedPart);
     }
+
+    private void saveSolvedRelic(User loginUser, Relic relic){
+        SolvedRelic solvedRelic = SolvedRelic.builder()
+                .relic(relic)
+                .user(loginUser)
+                .solvedAt(LocalDateTime.now())
+                .build();
+
+        solvedRelicRepository.save(solvedRelic);
+    }
+
     private boolean isPartSolved(User loginUser, Part part){
         int solvedElementNum = getSolvedElementNum(loginUser.getId(),part.getId());   // 유저가 해당 part 중 수집한 element 개수
         int elementNum = part.getElementNum();  // 해당 part의 총 element 개수
@@ -94,6 +113,15 @@ public class ArtworkService {
         // 해당 part의 총 요소 개수와 유저가 수집한 요소 개수 동일한지 여부 리턴
         return (solvedElementNum == elementNum);
     }
+
+    private boolean isRelicSolved(User loginUser, Relic relic){
+        int solvedPartNum = getSolvedPartNum(loginUser.getId(), relic.getId());   // 유저가 해당 relic 중 수집한 part 개수
+        int partNum = relic.getPartNum();   // 해당 relic의 총 part 개수
+
+        // 해당 relic의 부분 개수와 유저가 수집한 부분 개수가 동일한지 여부 리턴
+        return (solvedPartNum == partNum);
+    }
+
     // 작품 소제목 조회 API
     public PartsResponseDto getArtworkParts(Long relicId) {
         // 현재 로그인된 사용자 정보
