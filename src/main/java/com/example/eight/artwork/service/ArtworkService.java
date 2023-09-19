@@ -51,11 +51,19 @@ public class ArtworkService {
     private Element validateAndRecordElement(DetectionRequestDto requestDto) {
         // 로그인한 유저
         User loginUser = userService.getAuthentication();
+
+        // 인식한 요소의 name이 DB에 있다면 solvedElement 테이블에 기록
         String elementName = requestDto.getName();
         Element element = elementRepository.findByName(elementName);
-
         if (element != null) {
             saveSolvedElement(loginUser, element);
+
+            // 유저가 해당 part의 모든 element를 수집했다면 solvedPart 테이블에 기록
+            Part part = element.getPart();
+            if (isPartSolved(loginUser, part)) {
+                saveSolvedPart(loginUser, part);
+                log.info("부분 수집 완료 - 부분 name : {}", part.getName());
+            }
         }
 
         return element;
@@ -70,6 +78,22 @@ public class ArtworkService {
         solvedElementRepository.save(solvedElement);
     }
 
+    private void saveSolvedPart(User loginUser, Part part){
+        SolvedPart solvedPart = SolvedPart.builder()
+                .part(part)
+                .user(loginUser)
+                .solvedAt(LocalDateTime.now())
+                .build();
+
+        solvedPartRepository.save(solvedPart);
+    }
+    private boolean isPartSolved(User loginUser, Part part){
+        int solvedElementNum = getSolvedElementNum(loginUser.getId(),part.getId());   // 유저가 해당 part 중 수집한 element 개수
+        int elementNum = part.getElementNum();  // 해당 part의 총 element 개수
+
+        // 해당 part의 총 요소 개수와 유저가 수집한 요소 개수 동일한지 여부 리턴
+        return (solvedElementNum == elementNum);
+    }
     // 작품 소제목 조회 API
     public PartsResponseDto getArtworkParts(Long relicId) {
         // 현재 로그인된 사용자 정보
