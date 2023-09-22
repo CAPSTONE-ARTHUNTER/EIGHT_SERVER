@@ -8,4 +8,6 @@ import org.springframework.stereotype.Repository;
 public interface SolvedElementRepository extends JpaRepository<SolvedElement, Long> {
 
     boolean existsByUserIdAndElementId(Long userId, Long elementId);
+
+    SolvedElement findByUserIdAndElementId(Long userId, Long elementId);
 }
