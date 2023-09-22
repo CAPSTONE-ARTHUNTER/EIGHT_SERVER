@@ -86,8 +86,8 @@ public class SecurityConfig {
                                 .logoutSuccessUrl("/")
                 );
 
-         httpSecurity
-                 // 모든 request에서 jwt 토큰 검증하는 필터
+        httpSecurity
+                // 모든 request에서 jwt 토큰 검증하는 필터
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         // TODO: cors 설정
@@ -99,8 +99,12 @@ public class SecurityConfig {
     @Bean
     CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000/", "https://capstone-eight.netlify.app/"));
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "https://capstone-eight.netlify.app"));
         configuration.setAllowedMethods(Arrays.asList("GET","POST", "DELETE"));
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Authorization-refresh", "Cache-Control", "Content-Type"));
+        configuration.setExposedHeaders(Arrays.asList("Authorization", "Authorization-refresh"));
+        configuration.setAllowCredentials(true);
+
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
         return source;
