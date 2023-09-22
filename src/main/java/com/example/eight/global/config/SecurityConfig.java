@@ -15,6 +15,11 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import com.example.eight.global.jwt.JwtAuthFilter;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+
+import java.util.Arrays;
 
 @RequiredArgsConstructor
 @EnableWebSecurity  //스프링 시큐리티 활성화
@@ -31,6 +36,7 @@ public class SecurityConfig {
         httpSecurity
                 // 스프링 시큐리티의 보안기능 비활성화
                 .csrf(AbstractHttpConfigurer::disable)
+                .cors(AbstractHttpConfigurer::disable)
                 .headers(headers ->
                         headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
 //              .formLogin(AbstractHttpConfigurer::disable)     // 스프링 시큐리티의 Form Login 비활성화
@@ -88,5 +94,15 @@ public class SecurityConfig {
         // TODO: 예외 처리 필터
 
         return httpSecurity.build();
+    }
+
+    @Bean
+    CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000/", "https://capstone-eight.netlify.app/"));
+        configuration.setAllowedMethods(Arrays.asList("GET","POST", "DELETE"));
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 }
