@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.text.similarity.JaroWinklerDistance;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -36,6 +37,9 @@ public class ArtworkService {
     private final SolvedPartRepository solvedPartRepository;
     private final SolvedRelicRepository solvedRelicRepository;
     private final UserService userService;
+
+    @Value("${SERVIC_KEY.value}")
+    private String serviceKey;
 
     // 요소 인식 API
     // 클라이언트로부터 받은 요청으로 작품 부분에 해당하는 요소(element)를 검증
@@ -387,7 +391,6 @@ public class ArtworkService {
             Relic relic = relicOptional.get();
 
             try {
-                String serviceKey = "enter the service key";
 
                 // API 요청 URL 생성
                 String apiUrl = "http://www.emuseum.go.kr/openapi/relic/detail?serviceKey=" + URLEncoder.encode(serviceKey, "UTF-8") + "&id=" + relic.getApiId();
