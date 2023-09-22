@@ -391,7 +391,6 @@ public class ArtworkService {
             Relic relic = relicOptional.get();
 
             try {
-
                 // API 요청 URL 생성
                 String apiUrl = "http://www.emuseum.go.kr/openapi/relic/detail?serviceKey=" + URLEncoder.encode(serviceKey, "UTF-8") + "&id=" + relic.getApiId();
 
