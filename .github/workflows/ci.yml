@@ -28,6 +28,10 @@ jobs:
       GOOGLE_CLIENT_ID: ${{secrets.GOOGLE_CLIENT_ID}}
       GOOGLE_CLIENT_SECRET: ${{secrets.GOOGLE_CLIENT_SECRET}}
       JWT_SECRET: ${{secrets.JWT_SECRET}}
+      DATABASE_USERNAME: ${{secrets.DATABASE_USERNAME}}
+      DATABASE_PASSWORD: ${{secrets.DATABASE_PASSWORD}}
+      DATABASE_URL: ${{secrets.DATABASE_URL}}
+      SERVICE_KEY: ${{secrets.SERVICE_KEY}}
 
     steps:
       - uses: actions/checkout@v2
@@ -37,14 +41,6 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-
-      - name: Setup MySQL
-        uses: samin/mysql-action@v1
-        with:
-          character set server: 'utf8'
-          mysql database: 'eight'
-          mysql user: 'eight'
-          mysql password: 'eight1886!'
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
@@ -76,3 +72,10 @@ jobs:
           aws s3 cp \
             --region ap-northeast-2 \
             ./arthunter-build.zip s3://arthunter-s3-bucket
+
+      # codedeploy 실행해 배포
+      - name: Code Deploy
+        run: aws deploy create-deployment --application-name arthunter-codedeploy-app
+          --deployment-config-name CodeDeployDefault.OneAtATime
+          --deployment-group-name arthunter-codedeploy-deployment-group
+          --s3-location bucket=arthunter-s3-bucket,bundleType=zip,key=arthunter-build.zip
