@@ -5,6 +5,7 @@ files:
   - source: / #인스턴스에 복사할 디렉토리 경로
     destination: /home/ubuntu/app #인스턴스에서 파일이 복사되는 위치
     overwrite: yes #복사할 위치에 파일 있는 경우 대체
+file_exists_behavior: OVERWRITE
 
 permissions:
   - object: / #권한이 지정되는 파일 or 디렉토리
@@ -14,6 +15,6 @@ permissions:
 
 hooks:
   ApplicationStart: #CodeDeploy의 ApplicationStart에서 실행
-    - location: scripts/start.sh
+    - location: scripts/deploy.sh
       timeout: 60
       runas: ubuntu
