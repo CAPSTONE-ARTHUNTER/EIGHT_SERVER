@@ -21,6 +21,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
 
+import static org.springframework.security.config.Customizer.withDefaults;
+
 @RequiredArgsConstructor
 @EnableWebSecurity  //스프링 시큐리티 활성화
 @Configuration      //스프링의 Configuration 정의
@@ -36,7 +38,7 @@ public class SecurityConfig {
         httpSecurity
                 // 스프링 시큐리티의 보안기능 비활성화
                 .csrf(AbstractHttpConfigurer::disable)
-                .cors(AbstractHttpConfigurer::disable)
+                .cors(withDefaults())
                 .headers(headers ->
                         headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::disable))
 //              .formLogin(AbstractHttpConfigurer::disable)     // 스프링 시큐리티의 Form Login 비활성화
