@@ -43,6 +43,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         String requestURI = request.getRequestURI();    // 요청 URI
         if (List.of(    "/",
                         "/favicon.ico",
+                        "/app/login/google",
                         "/app").contains(requestURI)) {
             log.info("\""+requestURI + "\" 이므로 토큰을 검증하지 않습니다. ");
         }

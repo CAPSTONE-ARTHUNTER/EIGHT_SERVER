@@ -47,6 +47,7 @@ public class SecurityConfig {
                                 .requestMatchers(
                                         "/",                    // 루트 페이지
                                         "/app",                         // 메인 페이지
+                                        "/app/login/google",
                                         "/css/**",
                                         "/image/**",
                                         "/js/**",
