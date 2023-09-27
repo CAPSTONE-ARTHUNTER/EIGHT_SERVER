@@ -41,9 +41,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
          1. 다음 요청은 토큰을 담아 요청할 필요가 없으므로 필터 실행하지 않음
          */
         String requestURI = request.getRequestURI();    // 요청 URI
-        if (List.of("/oauth2/authorization/google",
-                        "/",
+        if (List.of(    "/",
                         "/favicon.ico",
+                        "/app/login/google",
                         "/app").contains(requestURI)) {
             log.info("\""+requestURI + "\" 이므로 토큰을 검증하지 않습니다. ");
         }

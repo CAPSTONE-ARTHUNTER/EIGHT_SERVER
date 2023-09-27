@@ -1,8 +1,5 @@
 package com.example.eight.global.config;
 
-import com.example.eight.global.oauth2.handler.OAuth2LoginFailureHandler;
-import com.example.eight.global.oauth2.handler.OAuth2LoginSuccessHandler;
-import com.example.eight.global.oauth2.service.CustomOAuth2UserService;
 import com.example.eight.user.Role;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -27,9 +24,6 @@ import static org.springframework.security.config.Customizer.withDefaults;
 @EnableWebSecurity  //스프링 시큐리티 활성화
 @Configuration      //스프링의 Configuration 정의
 public class SecurityConfig {
-    private final CustomOAuth2UserService customOAuth2UserService;
-    private final OAuth2LoginSuccessHandler oAuth2LoginSuccessHandler;
-    private final OAuth2LoginFailureHandler oAuth2LoginFailureHandler;
     private final JwtAuthFilter jwtAuthFilter;
 
 
@@ -53,7 +47,7 @@ public class SecurityConfig {
                                 .requestMatchers(
                                         "/",                    // 루트 페이지
                                         "/app",                         // 메인 페이지
-                                        "/oauth2/authorization/google",  // 로그인 페이지
+                                        "/app/login/google",
                                         "/css/**",
                                         "/image/**",
                                         "/js/**",
@@ -68,17 +62,7 @@ public class SecurityConfig {
                                 // 나머지 URL은 인증 필요
                                 .anyRequest().authenticated()
                 )
-                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
-                .oauth2Login(oauth2Login ->
-                        oauth2Login
-                                .loginPage("/oauth2/authorization/google")     // oauth 로그인 시작 url
-                                .successHandler(oAuth2LoginSuccessHandler)      // OAuth2 로그인 성공시 Handler
-                                .failureHandler(oAuth2LoginFailureHandler)      // OAuth2 로그인 실패시 Handler
-                                // OAuth 로그인 후 유저 정보 가져옴
-                                .userInfoEndpoint(userInfo ->
-                                        userInfo
-                                                .userService(customOAuth2UserService)   // OAuth2UserService 인터페이스를 커스텀한 Service클래스
-                                )
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class
                 );
 
         httpSecurity
