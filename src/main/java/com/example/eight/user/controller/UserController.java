@@ -3,17 +3,11 @@ package com.example.eight.user.controller;
 import com.example.eight.user.dto.ResponseDto;
 import com.example.eight.user.dto.UserProfileDto;
 import com.example.eight.user.service.UserService;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.io.IOException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -41,25 +35,6 @@ public class UserController {
         return "/users/** 페이지는 인증이 필요합니다.";
     }
 
-    @GetMapping("/oauth2/authorization/google")
-    public void googleLogin(HttpServletRequest request, HttpServletResponse response) throws IOException {     // @RestController여서 String 타입 리턴시 리다이렉트 불가
-        log.info("인증이 필요하여 \"/auth/oauth2/google\"로 이동했습니다.");
-
-        // 구글 로그인 URI
-        String redirectUri = "http://localhost:8080/login/oauth2/code/google";
-        String scope = "email profile openid";
-        String encodedScope = URLEncoder.encode(scope, StandardCharsets.UTF_8);
-
-        String GoogleLoginURI = "https://accounts.google.com/o/oauth2/v2/auth" +
-                "?client_id=" + googleClientId +
-                "&redirect_uri=" + redirectUri +
-                "&response_type=code" +
-                "&scope=" + encodedScope +
-                "&access_type=offline";
-
-        // 구글 로그인 페이지로 리다이렉트
-        response.sendRedirect(GoogleLoginURI);
-    }
 
     // 유저 프로필 조회
     @GetMapping("/app/users/profile")
