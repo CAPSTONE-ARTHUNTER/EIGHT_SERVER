@@ -55,4 +55,21 @@ public class OauthService {
         }
     }
 
+    // 구글 OAuth에서 가져온 accessToken으로 다시 유저 정보 요청하는 메소드
+    public String getUserInfo(String accessToken) {
+
+        // WebClient 객체 생성
+        WebClient webclient = WebClient.builder()
+                .baseUrl("https://www.googleapis.com/oauth2/v2/userinfo")
+                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .defaultHeader("Authorization", "Bearer " + accessToken)
+                .build();
+
+        // GET 요청 보내기
+        String userInfo = webclient.get()
+                .retrieve().bodyToMono(String.class)    // 응답 받으면 String으로 받아오기
+                .block();
+
+        return userInfo;
+    }
 }
