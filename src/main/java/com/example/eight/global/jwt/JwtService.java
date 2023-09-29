@@ -52,7 +52,7 @@ public class JwtService {
 
         return JWT.create()
                 .withSubject("AccessToken") // Subject를 AccessToken으로 지정
-                .withExpiresAt(new Date(now.getTime() + accessTokenExpiration)) // 만료 시간
+                .withExpiresAt(new Date(now.getTime() + accessTokenExpiration*1000)) // 만료 시간: 1시간
                 .withClaim("email", email)         // claim으로 email 하나 사용
                 .sign(Algorithm.HMAC512(secretKey)); // HMAC512 알고리즘 사용
     }
@@ -64,7 +64,7 @@ public class JwtService {
         Date now = new Date();
         return JWT.create()
                 .withSubject("RefreshToken")     // Subject를 RefreshToken으로 지정
-                .withExpiresAt(new Date(now.getTime() + refreshTokenExpiration)) // 만료 시간
+                .withExpiresAt(new Date(now.getTime() + refreshTokenExpiration*1000)) // 만료 시간 : 2주
                 .sign(Algorithm.HMAC512(secretKey));    // HMAC512 알고리즘 사용 ( refresh token은 claim 없음)
     }
 
