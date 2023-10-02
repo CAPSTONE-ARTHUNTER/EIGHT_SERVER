@@ -1,6 +1,6 @@
 package com.example.eight.user.controller;
 
-import com.example.eight.user.dto.ResponseDto;
+import com.example.eight.global.ResponseDto;
 import com.example.eight.user.dto.UserProfileDto;
 import com.example.eight.user.service.UserService;
 import lombok.RequiredArgsConstructor;

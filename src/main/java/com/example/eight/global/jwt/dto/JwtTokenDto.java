@@ -1,4 +1,4 @@
-package com.example.eight.user.dto;
+package com.example.eight.global.jwt.dto;
 
 import lombok.Builder;
 import lombok.Getter;
