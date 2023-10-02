@@ -1,6 +1,6 @@
 package com.example.eight.global.oauth2.controller;
 
-import com.example.eight.global.jwt.JwtService;
+import com.example.eight.global.jwt.service.JwtService;
 import com.example.eight.global.oauth2.service.OauthService;
 import com.example.eight.user.SocialType;
 import com.example.eight.global.jwt.dto.JwtTokenDto;
