@@ -1,7 +1,11 @@
 package com.example.eight.global.jwt;
 
+import com.auth0.jwt.exceptions.TokenExpiredException;
+import com.example.eight.global.ResponseDto;
+import com.example.eight.global.jwt.service.JwtService;
 import com.example.eight.user.entity.User;
 import com.example.eight.user.repository.UserRepository;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -34,38 +38,29 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
-        /*
-         1. 다음 요청은 토큰을 담아 요청할 필요가 없으므로 필터 실행하지 않음
-         */
-        String requestURI = request.getRequestURI();    // 요청 URI
-        if (List.of(    "/",
-                        "/favicon.ico",
-                        "/app/login/google",
-                        "/app").contains(requestURI)) {
-            log.info("\""+requestURI + "\" 이므로 토큰을 검증하지 않습니다. ");
-        }
-
-        /*
-         3. 유효한 refresh token이 있다면 -> refresh 토큰이 DB와 일치하는지 판단 후 토큰 재발급
-         */
-        else{
-            log.info("\""+requestURI + "\" 이므로 -- 토큰을 검증합니다 --");
-            log.info("[doFilterInternal] 유효한 refresh 토큰이니 access 토큰과 refresh 토큰을 재발급합니다.");
-            reCreateTokens(response, refreshToken.get());
-        }
-
-        // 다음 필터 호출
-        filterChain.doFilter(request, response);
-    }
-
         try {
+            String requestURI = request.getRequestURI();    // 요청 URI
+
+            // 다음 요청은 토큰을 담아 요청할 필요가 없으므로 필터 실행하지 않음
+            if (List.of("/", "/app", "/favicon.ico",
+                    "/app/login/google").contains(requestURI)) {
+                log.info("\"" + requestURI + "\" 이므로 토큰을 검증하지 않습니다. ");
+            }
+            // 위 외의 모든 요청은 Request 헤더의 accessToken 검사
+            else {
+                log.info("\"" + requestURI + "\" 이므로 -- access 토큰을 검증합니다 --");
+                Optional<String> accessToken = jwtService.getToken(request, "accessToken"); // request 헤더에서 access 토큰 가져오기
+
+                // accessToken이 유효한 경우 Authenticate객체 생성
+                if (accessToken.isPresent() && jwtService.validateToken(accessToken.get())) {
+                    String userEmail = jwtService.getClaim(accessToken.get()).orElse(null); // 토큰에서 claim 추출
+                    if (userEmail != null) {
+                        Optional<User> userOptional = userRepository.findByEmail(userEmail);
+                        userOptional.ifPresent(user -> authenticateUser(user, accessToken.get()));  // claim으로 유저 찾아 Authentication 객체를 SecurityContextHodler에 저장
+                    }
                 }
             }
-        }
-        // 토큰 검증 실패 -> 로그인 페이지로 리다이렉트
-        else{
-            log.info("유효한 access 토큰도 없으므로 로그인 페이지로 리다이렉트합니다.");
-            response.sendRedirect("/oauth2/authorization/google");
+            filterChain.doFilter(request, response);    // 다음 필터 호출
         } catch (TokenExpiredException e) {
             //AccessToken 만료된 경우 예외처리
             handleTokenExpiredException(response, e);
