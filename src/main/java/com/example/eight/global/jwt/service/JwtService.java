@@ -137,4 +137,31 @@ public class JwtService {
             return Optional.empty();
         }
     }
+
+    /*
+     *  Refresh 토큰으로 유저 찾아서 -> refresh와 access 토큰 재발급
+     */
+    public Map<String, String> reCreateTokens(String refreshToken) {
+        Map<String, String> tokens = new HashMap<String, String>();
+
+        userRepository.findByRefreshToken(refreshToken)
+                // refresh token으로 찾은 유저가 있으면
+                .ifPresent(user -> {
+                    // 1. refresh 토큰 재발급
+                    String newRefreshToken = createRefreshToken();
+                    log.info("새로 발급한 refresh 토큰: {}", newRefreshToken);
+                    user.updateRefreshToken(newRefreshToken);   // refreshToken은 DB에 저장
+                    userRepository.save(user);
+
+                    // 2. access token 재발급
+                    String newAccessToken = createAccessToken(user.getEmail());    // access token 생성
+                    log.info("새로 발급한 access 토큰: {}", newAccessToken);
+
+                    // 3. 토큰 리턴
+                    tokens.put("accessToken", newAccessToken);
+                    tokens.put("refreshToken", newRefreshToken);
+                });
+        return tokens;
+    }
+
 }
