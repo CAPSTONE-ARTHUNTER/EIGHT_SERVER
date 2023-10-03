@@ -88,6 +88,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                 if (userOptional.isPresent()) {
                     User user = userOptional.get();
                     authenticateUser(user, accessToken.get());
+        try {
                 }
             }
         }
@@ -95,6 +96,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         else{
             log.info("유효한 access 토큰도 없으므로 로그인 페이지로 리다이렉트합니다.");
             response.sendRedirect("/oauth2/authorization/google");
+        } catch (TokenExpiredException e) {
+            //AccessToken 만료된 경우 예외처리
+            handleTokenExpiredException(response, e);
         }
     }
 
@@ -140,6 +144,18 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                     // 3.refresh와 access 토큰 response 헤더로 보내기
                     jwtService.sendTokens(response, newAccessToken, newRefreshToken);
                 });
+    // AccessToken 만료된 경우 401 응답하는 메소드
+    private void handleTokenExpiredException(HttpServletResponse response, TokenExpiredException e) throws IOException {
+        log.error("유효한 Access 토큰이 아님 - {}", e.getMessage());
+        ResponseDto responseDto = ResponseDto.builder()
+                .status("Unauthorized")
+                .message("Access Token Expired")
+                .build();
+        String jsonResponse = new ObjectMapper().writeValueAsString(responseDto);
+        response.setStatus(401);
+        response.setContentType("application/json");
+        response.getWriter().write(jsonResponse);
+        response.getWriter().flush();
     }
 
 
