@@ -1,6 +1,6 @@
 package com.example.eight.artwork.controller;
 
-import com.example.eight.user.dto.ResponseDto;
+import com.example.eight.global.ResponseDto;
 import com.example.eight.artwork.dto.*;
 import com.example.eight.artwork.service.ArtworkService;
 import lombok.AllArgsConstructor;

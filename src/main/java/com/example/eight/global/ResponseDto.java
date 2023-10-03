@@ -1,4 +1,4 @@
-package com.example.eight.user.dto;
+package com.example.eight.global;
 
 import lombok.Builder;
 import lombok.Data;
