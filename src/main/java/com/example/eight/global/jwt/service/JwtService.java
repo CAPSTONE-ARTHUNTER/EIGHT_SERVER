@@ -1,8 +1,11 @@
-package com.example.eight.global.jwt;
+package com.example.eight.global.jwt.service;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.example.eight.global.ResponseDto;
+import com.example.eight.global.jwt.dto.JwtTokenDto;
 import com.example.eight.user.repository.UserRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -11,9 +14,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 @Setter         //테스트코드에서 사용하기 위해 추가
@@ -117,8 +125,7 @@ public class JwtService {
         try {
             JWT.require(Algorithm.HMAC512(secretKey)).build().verify(token);
             return true;
-        } catch (Exception e) {
-            log.error( "유효한 토큰이 아님 - {}",e.getMessage());
+        } catch (SecurityException e) {
             return false;
         }
     }
@@ -162,6 +169,49 @@ public class JwtService {
                     tokens.put("refreshToken", newRefreshToken);
                 });
         return tokens;
+    }
+
+    // RefreshToken 검증하여 토큰 재발급하는 메소드
+    public ResponseEntity<ResponseDto> validateRefreshToken(HashMap<String, String> bodyJson, HttpServletResponse response) throws IOException {
+        try {
+            // 1. refresh 토큰 유효성 검사
+            String refreshToken = bodyJson.get("refreshToken"); // Request 바디로 받은 refresh 토큰 가져오기
+            validateToken(refreshToken); // 토큰 유효한지 확인
+
+            // 2. DB에 해당 refreshToken 있는지 확인
+            Boolean isExists = userRepository.existsByRefreshToken(refreshToken);
+            if (!isExists) { // DB에 없다면 401 응답
+                return createResponseEntity(HttpStatus.UNAUTHORIZED, "Refresh Token is not found in Database", null);
+            }
+
+            // 유효하면 accessToken과 refreshToken 재발급해서
+            Map<String, String> tokens = reCreateTokens(refreshToken);
+
+            // 토큰 담아 200 응답
+            String newRefreshToken = tokens.get("refreshToken");
+            String newAccessToken = tokens.get("accessToken");
+            JwtTokenDto jwtTokenDto = new JwtTokenDto("Bearer " + newAccessToken, "Bearer " + newRefreshToken);
+            return createResponseEntity(HttpStatus.OK, "Reissue Tokens successful", jwtTokenDto);
+        }
+        // RefresToken 만료된 경우 401 응답
+        catch (TokenExpiredException e) {
+            return createResponseEntity(HttpStatus.UNAUTHORIZED, "Expired Refresh Token", null);
+        }
+        // 그 외 401 응답
+        catch (Exception e) {
+            log.error(e.getMessage());
+            return createResponseEntity(HttpStatus.UNAUTHORIZED, "Refresh Token is Invalid", null);
+        }
+    }
+
+    // 에러 응답 생성하여 리턴하는 메소드
+    private ResponseEntity<ResponseDto> createResponseEntity(HttpStatus status, String message, JwtTokenDto data) {
+        ResponseDto responseDto = ResponseDto.builder()
+                .status(status.toString())
+                .message(message)
+                .data(data)
+                .build();
+        return ResponseEntity.status(status).body(responseDto);
     }
 
 }
