@@ -48,6 +48,7 @@ public class SecurityConfig {
                                         "/",                    // 루트 페이지
                                         "/app",                         // 메인 페이지
                                         "/app/login/google",
+                                        "/app/auth/refresh",
                                         "/css/**",
                                         "/image/**",
                                         "/js/**",

@@ -43,7 +43,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
             // 다음 요청은 토큰을 담아 요청할 필요가 없으므로 필터 실행하지 않음
             if (List.of("/", "/app", "/favicon.ico",
-                    "/app/login/google").contains(requestURI)) {
+                    "/app/login/google",
+                    "/app/auth/refresh").contains(requestURI)) {
                 log.info("\"" + requestURI + "\" 이므로 토큰을 검증하지 않습니다. ");
             }
             // 위 외의 모든 요청은 Request 헤더의 accessToken 검사
