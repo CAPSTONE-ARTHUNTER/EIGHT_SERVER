@@ -33,9 +33,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
     //OncePerRequestFilter의 doFilterInternal()를 Override
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        // request 헤더에서 refresh 토큰 가져오기
-        Optional<String> refreshToken = jwtService.getToken(request, "refreshToken")
-                .filter(jwtService::validateToken);
 
         /*
          1. 다음 요청은 토큰을 담아 요청할 필요가 없으므로 필터 실행하지 않음
@@ -49,14 +46,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         }
 
         /*
-         2. 유효한 refresh token이 없다면 -> access 토큰을 검사해서 인증 처리
-         */
-        else if(refreshToken.isEmpty()){
-            log.info("\""+requestURI + "\" 이므로 -- 토큰을 검증합니다 --");
-            log.info("[doFilterInternal] 유효한 refresh 토큰이 없어 access 토큰을 검사합니다.");
-            authenticateAccessToken(request, response, filterChain);
-        }
-        /*
          3. 유효한 refresh token이 있다면 -> refresh 토큰이 DB와 일치하는지 판단 후 토큰 재발급
          */
         else{
@@ -69,25 +58,6 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         filterChain.doFilter(request, response);
     }
 
-    /**
-     * Access 토큰 확인해서 유저 인증 처리
-     */
-    public void authenticateAccessToken(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        // request 헤더에서 access 토큰 가져오기
-        Optional<String> accessToken = jwtService.getToken(request, "accessToken");
-
-        // access 토큰이 유효하므로 토큰 검증 성공
-        if (accessToken.isPresent() && jwtService.validateToken(accessToken.get())) {
-            log.info("[authenticateAccessToken] access 토큰 유효함: {}",accessToken);
-
-            // 토큰에서 claim 추출
-            String userEmail = jwtService.getClaim(accessToken.get()).orElse(null);
-            // claim으로 찾은 DB에서 유저의 Authentication 객체를 SecurityContextHodler에 저장
-            if (userEmail != null) {
-                Optional<User> userOptional = userRepository.findByEmail(userEmail);
-                if (userOptional.isPresent()) {
-                    User user = userOptional.get();
-                    authenticateUser(user, accessToken.get());
         try {
                 }
             }
