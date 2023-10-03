@@ -88,17 +88,6 @@ public class JwtService {
     }
 
     /*
-    AccessToken과 RefreshToken을 헤더로 보내기
-    */
-    public void sendTokens(HttpServletResponse response, String accessToken, String refreshToken) {
-        response.setStatus(HttpServletResponse.SC_OK);
-
-        response.setHeader(accessHeader, accessToken);      // Acess Token을 헤더에 싣기
-        response.setHeader(refreshHeader, refreshToken);    // Refresh Token을 헤더에 싣기
-        log.info("[Response 헤더] Access & Refresh 토큰을 응답 헤더로 보냈습니다.");
-    }
-
-    /*
     request 헤더에서 Token 추출
      */
     public Optional<String> getToken(HttpServletRequest request, String tokenType) {
@@ -117,7 +106,6 @@ public class JwtService {
                 .filter(token -> token.startsWith("Bearer "))
                 .map(token -> token.replace("Bearer ", ""));    // 헤더에서 "Bearer" 삭제해서 토큰만 가져오기
     }
-
     /*
      * Token 유효성 검사
      */
