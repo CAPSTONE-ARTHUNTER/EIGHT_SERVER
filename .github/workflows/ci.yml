@@ -4,7 +4,7 @@ name: ArtHunter server CI/CD
 on:
   push:
     branches:
-      - ci-githubaction/yeni
+      - release/yeni
   pull_request:
     types:
       - closed
