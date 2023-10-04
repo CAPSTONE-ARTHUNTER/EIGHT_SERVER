@@ -9,6 +9,7 @@ import lombok.*;
 public class TagResponseDto {
     private Long id;
     private String name;
+    private String relicImage;
 
     public static class TagResponseDtoBuilder {
 

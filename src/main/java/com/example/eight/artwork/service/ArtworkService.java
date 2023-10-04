@@ -430,6 +430,7 @@ public class ArtworkService {
         String bestMatchingApiId = null;
         Long dbId = null;
         String name = null;
+        String relicImage = null;
 
         // 태그와 유사한 작품명 찾기
         List<Long> allArtworkApiIds = getAllArtworkApiIds();    // db에 저장된 모든 작품의 api id 리스트
@@ -444,6 +445,9 @@ public class ArtworkService {
             dbId = relic.getId();
             // 작품명 가져오기
             name = getRelicInfoByAPI(dbId, "nameKr");
+            // db의 작품 이미지 가져오기
+            relicImage = relic.getImage();
+
         }
 
         // 응답 객체 생성
@@ -451,6 +455,7 @@ public class ArtworkService {
             return TagResponseDto.builder()
                     .id(dbId)
                     .name(name)  // 유사한 작품명 사용
+                    .relicImage(relicImage)
                     .build();
         } else {
             return null;  // 유사한 작품명을 찾지 못한 경우
