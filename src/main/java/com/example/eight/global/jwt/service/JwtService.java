@@ -81,10 +81,10 @@ public class JwtService {
      */
     public void saveRefreshToken(String email, String refreshToken) {
         userRepository.findByEmail(email)
-                .ifPresentOrElse(
-                        user -> user.updateRefreshToken(refreshToken),
-                        () -> new Exception("해당 유저가 없음")
-                );
+                .ifPresent(user -> {
+                    user.updateRefreshToken(refreshToken);
+                    userRepository.save(user);
+                });
     }
 
     /*
