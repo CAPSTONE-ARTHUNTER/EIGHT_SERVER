@@ -82,9 +82,11 @@ public class JwtService {
     public void saveRefreshToken(String email, String refreshToken) {
         userRepository.findByEmail(email)
                 .ifPresent(user -> {
+                    log.info("리프레시 토큰으로 찾은 유저: {}", user.getEmail());
                     user.updateRefreshToken(refreshToken);
                     userRepository.save(user);
                 });
+        log.info("saveRefreshToken 메소드 종료");
     }
 
     /*
