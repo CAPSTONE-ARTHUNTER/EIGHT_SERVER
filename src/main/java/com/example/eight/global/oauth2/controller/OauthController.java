@@ -10,6 +10,7 @@ import com.example.eight.user.service.UserService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -24,6 +25,7 @@ public class OauthController {
     private final UserService userService;
 
 
+    @Transactional
     @GetMapping("/app/login/google")
     public ResponseEntity<ResponseDto> googleLogin(@RequestParam String code){
         // 1. 프론트엔드로부터 받은 인가코드로 구글 서버에서 accessToken 받아오기
@@ -35,6 +37,7 @@ public class OauthController {
         // 3. DB에 유저 정보 저장/업데이트
         UserInfoDto userInfoDto = userService.parseUserInfo(userInfo);  // 받은 유저 info 파싱해서 필요한 정보 저장
         String userEmail = userInfoDto.getEmail();
+        log.info("구글에서 가져온 유저 이메일: {}",userEmail);
         String userName = userInfoDto.getName();
         String userPicture = userInfoDto.getPicture();
         userService.createOrUpdateUser(userEmail, userName, userPicture, SocialType.GOOGLE);
