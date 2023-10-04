@@ -458,7 +458,10 @@ public class ArtworkService {
                     .relicImage(relicImage)
                     .build();
         } else {
-            return null;  // 유사한 작품명을 찾지 못한 경우
+            // 작품 태그 인식 결과 없을 때, 에러 메시지 반환
+            return TagResponseDto.builder()
+                    .error("작품 태그 인식에 실패했습니다.")  // 에러 메시지 추가
+                    .build();
         }
     }
 
