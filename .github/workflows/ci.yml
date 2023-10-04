@@ -9,7 +9,7 @@ on:
     types:
       - closed
     branches:
-      - ci-githubaction/yeni
+      - release
 
 env:
   S3_BUCKET_NAME: cointalk-deploy
