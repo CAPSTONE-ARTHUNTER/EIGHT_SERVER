@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Builder
 public class PartInfoDto {
+    private Long partId;
     private String name;
     private boolean isSolved;
 }

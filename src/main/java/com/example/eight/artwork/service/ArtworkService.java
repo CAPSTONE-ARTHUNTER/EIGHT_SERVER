@@ -182,6 +182,7 @@ public class ArtworkService {
             boolean part_isSolved = solvedPartRepository.existsByUserIdAndPartId(loginUser.getId(), part.getId());
 
             PartInfoDto partInfoDto = PartInfoDto.builder()
+                    .partId(part.getId()) // 부분 ID
                     .name(part.getName())  // 부분 이름
                     .isSolved(part_isSolved)  // 현재 사용자가 해당 부분 획득 여부
                     .build();
