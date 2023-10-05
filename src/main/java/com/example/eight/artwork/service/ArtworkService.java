@@ -170,7 +170,7 @@ public class ArtworkService {
         Relic relic = optionalRelic.get();
 
         // 공공 API에서 작품 이미지 URI, 작품 이름 가져오기
-        String relicImageUri = getRelicInfoByAPI(relicId, "imgUri");
+        String relicImage = relic.getImage();    // 이미지는 DB에 저장
         String relicName = getRelicInfoByAPI(relicId, "nameKr");
 
         // 부분 정보 조회 및 변환
@@ -195,7 +195,7 @@ public class ArtworkService {
 
         PartsResponseDto responseDto = PartsResponseDto.builder()
                 .relicName(relicName)
-                .relicImage(relicImageUri)  // 작품 이미지 URI 설정
+                .relicImage(relicImage)  // 작품 이미지 URI 설정
                 .relicBadgeImage(relic.getBadgeImage())
                 .partInfos(partInfoDtos)
                 .totalPartCount(parts.size())
@@ -284,7 +284,7 @@ public class ArtworkService {
         }
 
         // 2. 공공 API에서 작품 정보 가져오기
-        String relicImage = getRelicInfoByAPI(relicId,"imgUri");
+        String relicImage = relic.getImage();   // 이미지는 DB에 저장
         String relicName = getRelicInfoByAPI(relicId,"nameKr");
         String author = getRelicInfoByAPI(relicId,"author");
         String nationality = getRelicInfoByAPI(relicId,"nationalityName2");
@@ -335,7 +335,7 @@ public class ArtworkService {
         }
 
         // 4. 공공 API에서 작품 정보 가져오기
-        String relicImage = getRelicInfoByAPI(relicId,"imgUri");
+        String relicImage = relic.getImage();   // 이미지는 DB에 저장
         String relicName = getRelicInfoByAPI(relicId,"nameKr");
 
         // 5. 최종 DTO 생성
