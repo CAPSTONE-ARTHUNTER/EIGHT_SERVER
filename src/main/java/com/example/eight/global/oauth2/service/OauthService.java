@@ -33,7 +33,7 @@ public class OauthService {
         formData.add("code", code);
         formData.add("client_id", googleClientId);
         formData.add("client_secret", googleClientSecret);
-        formData.add("redirect_uri", "http://localhost:3000/login/oauth2/code/google");
+        formData.add("redirect_uri", "https://capstone-eight.netlify.app/login/oauth2/code/google");
         formData.add("grant_type", "authorization_code");
 
         // POST 요청 보내기
