@@ -396,16 +396,21 @@ public class ArtworkService {
                 RestTemplate restTemplate = new RestTemplate();
                 String apiResponse = restTemplate.getForObject(uri, String.class);
 
-                // API 응답 파싱하여 이미지 uri 가져오기
+                // API 응답 파싱하여 target 정보 가져오기
                 ObjectMapper objectMapper = new ObjectMapper();
                 JsonNode jsonNode = objectMapper.readTree(apiResponse);
                 JsonNode listNode = jsonNode.get("list");
 
                 if (listNode != null && listNode.isArray() && listNode.size() > 0) {
                     JsonNode firstItem = listNode.get(0);
-                    String targetInfo = firstItem.get(target).asText();
-
-                    return targetInfo;
+                    // target 정보 가져와서 리턴
+                    try {
+                        String targetInfo = firstItem.get(target).asText();
+                        return targetInfo;  // target 정보 리턴
+                    }
+                    catch (Exception e){
+                        return "미상";    // 해당하는 정보 없으면 '미상'인 경우이므로 리턴
+                    }
                 } else {
                     // API 응답에서 이미지 URI를 찾을 수 없는 경우
                     return String.format("Artwork %s not found in API response.", target);
