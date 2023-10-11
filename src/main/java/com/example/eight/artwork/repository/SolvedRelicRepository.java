@@ -8,4 +8,6 @@ import org.springframework.stereotype.Repository;
 public interface SolvedRelicRepository extends JpaRepository<SolvedRelic, Long> {
 
     SolvedRelic findByUserIdAndRelicId(Long userId, Long relicId);
+
+    boolean existsByUserIdAndRelicId(Long userId, Long relicId);
 }
