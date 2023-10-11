@@ -12,6 +12,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.text.similarity.JaroWinklerDistance;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
@@ -36,6 +37,9 @@ public class ArtworkService {
     private final SolvedPartRepository solvedPartRepository;
     private final SolvedRelicRepository solvedRelicRepository;
     private final UserService userService;
+
+    @Value("${SERVIC_KEY.value}")
+    private String serviceKey;
 
     // 요소 인식 API
     // 클라이언트로부터 받은 요청으로 작품 부분에 해당하는 요소(element)를 검증
@@ -178,6 +182,7 @@ public class ArtworkService {
             boolean part_isSolved = solvedPartRepository.existsByUserIdAndPartId(loginUser.getId(), part.getId());
 
             PartInfoDto partInfoDto = PartInfoDto.builder()
+                    .partId(part.getId()) // 부분 ID
                     .name(part.getName())  // 부분 이름
                     .isSolved(part_isSolved)  // 현재 사용자가 해당 부분 획득 여부
                     .build();
@@ -387,8 +392,6 @@ public class ArtworkService {
             Relic relic = relicOptional.get();
 
             try {
-                String serviceKey = "enter the service key";
-
                 // API 요청 URL 생성
                 String apiUrl = "http://www.emuseum.go.kr/openapi/relic/detail?serviceKey=" + URLEncoder.encode(serviceKey, "UTF-8") + "&id=" + relic.getApiId();
 
@@ -433,6 +436,7 @@ public class ArtworkService {
         String bestMatchingApiId = null;
         Long dbId = null;
         String name = null;
+        String relicImage = null;
 
         // 태그와 유사한 작품명 찾기
         List<Long> allArtworkApiIds = getAllArtworkApiIds();    // db에 저장된 모든 작품의 api id 리스트
@@ -447,6 +451,9 @@ public class ArtworkService {
             dbId = relic.getId();
             // 작품명 가져오기
             name = getRelicInfoByAPI(dbId, "nameKr");
+            // db의 작품 이미지 가져오기
+            relicImage = relic.getImage();
+
         }
 
         // 응답 객체 생성
@@ -454,9 +461,13 @@ public class ArtworkService {
             return TagResponseDto.builder()
                     .id(dbId)
                     .name(name)  // 유사한 작품명 사용
+                    .relicImage(relicImage)
                     .build();
         } else {
-            return null;  // 유사한 작품명을 찾지 못한 경우
+            // 작품 태그 인식 결과 없을 때, 에러 메시지 반환
+            return TagResponseDto.builder()
+                    .error("작품 태그 인식에 실패했습니다.")  // 에러 메시지 추가
+                    .build();
         }
     }
 

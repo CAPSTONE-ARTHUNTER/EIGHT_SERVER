@@ -73,8 +73,8 @@ public class SecurityConfig {
                                 .logoutSuccessUrl("/")
                 );
 
-         httpSecurity
-                 // 모든 request에서 jwt 토큰 검증하는 필터
+        httpSecurity
+                // 모든 request에서 jwt 토큰 검증하는 필터
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         // TODO: cors 설정
