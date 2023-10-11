@@ -508,6 +508,33 @@ public class ArtworkService {
         return bestMatchingId;  // 가장 유사한 작품명의 api id 반환
     }
 
+    // 전체 작품 조회 API
+    public List<RelicInfoDto> getAllRelicInfo() {
+
+        List<Relic> relics = relicRepository.findAll();
+
+        // relic을 RelicInfoDto로 변환
+        List<RelicInfoDto> relicInfoList = new ArrayList<>();
+        for (Relic relic : relics) {
+            RelicInfoDto relicInfo = new RelicInfoDto();
+
+            // DB에서 가져오는 정보
+            relicInfo.setArt_id(relic.getId());
+            relicInfo.setArt_image_url(relic.getImage());
+            relicInfo.setArt_name_en(relic.getNameEn());
+
+            // 공공API에서 가져오는 정보
+            relicInfo.setArt_name_kr(getRelicInfoByAPI(relic.getId(),"nameKr")); // 작품 국문 제목
+            relicInfo.setArt_artist_name(getRelicInfoByAPI(relic.getId(),"author")); // 작가
+            relicInfo.setArt_era(getRelicInfoByAPI(relic.getId(),"nationalityName2")); // 시대
+
+            relicInfoList.add(relicInfo);
+
+        }
+
+        return relicInfoList;
+    }
+
 }
 
 
