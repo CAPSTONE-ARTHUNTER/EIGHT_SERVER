@@ -8,6 +8,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @Controller
 @AllArgsConstructor
 @RequestMapping("/app/artwork")
@@ -78,7 +80,8 @@ public class ArtworkController{
 
     // 부분의 해설 및 요소정보 조회 API
     @GetMapping("/parts/details/{relic_id}/{part_id}")
-    public ResponseEntity<ResponseDto> getPartDescriptionAndElementInfo(@PathVariable("relic_id") Long relicId, @PathVariable("part_id") Long partId){
+    public ResponseEntity<ResponseDto> getPartDescriptionAndElementInfo(@PathVariable("relic_id") Long relicId,
+                                                                        @PathVariable("part_id") Long partId){
 
         PartDescriptionAndElementResponseDto partDescriptionAndElementResponseDto = artworkService.getPartDescriptionAndElement(relicId, partId);
 
@@ -90,4 +93,17 @@ public class ArtworkController{
 
         return ResponseEntity.ok(responseDto);
     }
+
+    // 전체 작품 조회 API
+    @GetMapping("")
+    public ResponseEntity<RelicResponseDto> getAllRelicInfo() {
+        List<RelicInfoDto> relicInfoList = artworkService.getAllRelicInfo();
+
+        RelicResponseDto responseDto = RelicResponseDto.builder()
+                .data(relicInfoList)
+                .build();
+
+        return ResponseEntity.ok(responseDto);
+    }
+
 }
