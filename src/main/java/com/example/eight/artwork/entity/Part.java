@@ -29,7 +29,7 @@ public class Part implements Serializable {
     private String name;
 
     @NotNull
-    @Column(name = "text_description", length = 1000)
+    @Column(name = "text_description", length = 3000)
     private String textDescription;
 
     @Lob
