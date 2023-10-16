@@ -10,4 +10,6 @@ import java.util.List;
 @Repository
 public interface PartRepository extends JpaRepository<Part, Long> {
     List<Part> findByRelic(Relic relic);
+
+    List<Part> findByRelicId(Long relicId);
 }
