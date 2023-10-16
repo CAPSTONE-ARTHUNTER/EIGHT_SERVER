@@ -106,4 +106,23 @@ public class ArtworkController{
         return ResponseEntity.ok(responseDto);
     }
 
+    // 작품 전체 해설 조회 API
+    @GetMapping("/details/{relic_id}")
+    public ResponseEntity<ResponseDto> getArtworkDetails(@PathVariable("relic_id") Long relicId) {
+
+        RelicDetailResponseDto relicDetail = artworkService.getArtworkDetails(relicId);
+
+        if (relicDetail != null) {
+            ResponseDto responseDto = ResponseDto.builder()
+                    .data(relicDetail)
+                    .build();
+            return ResponseEntity.ok(responseDto);
+
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+
+
 }
