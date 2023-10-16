@@ -535,6 +535,61 @@ public class ArtworkService {
         return relicInfoList;
     }
 
+    // 작품 전체 해설 조회
+    public RelicDetailResponseDto getArtworkDetails(Long relicId) {
+
+        RelicDetailResponseDto relicDetailDto = new RelicDetailResponseDto();
+
+        // 작품 정보 조회
+        Optional<Relic> optionalRelic = relicRepository.findById(relicId);
+        if (optionalRelic.isEmpty()) {
+            return null;
+        }
+
+        Relic relic = optionalRelic.get();
+
+        // DB에서 가져오는 정보
+        relicDetailDto.setRelicId(relicId);
+        relicDetailDto.setRelicNameEn(relic.getNameEn());
+        relicDetailDto.setRelicImageUrl(relic.getImage());
+
+        // 공공 API에서 가져오는 정보
+        relicDetailDto.setRelicNameKr(getRelicInfoByAPI(relicId, "nameKr"));
+        relicDetailDto.setRelicArtistName(getRelicInfoByAPI(relicId, "author"));
+        relicDetailDto.setRelicEra(getRelicInfoByAPI(relicId, "nationalityName2"));
+        relicDetailDto.setRelicSize(getRelicInfoByAPI(relicId, "sizeInfo"));
+        relicDetailDto.setRelicIndex(getRelicInfoByAPI(relicId, "indexWord"));
+
+        // 작품 해설 가져오기
+        String relicDescription = getRelicDescription(relicId);
+        relicDetailDto.setRelicDescription(relicDescription);
+
+        return relicDetailDto;
+    }
+
+    // 부분 해설 합쳐서 전체 해설 생성
+    public String getRelicDescription(Long relicId) {
+
+        List<Part> parts = partRepository.findByRelicId(relicId);
+
+        // 해설을 이어 붙일 StringBuilder 생성
+        StringBuilder descriptionBuilder = new StringBuilder();
+
+        for (Part part : parts) {
+            // 각 부분의 text_description을 이어 붙임
+            if (part.getTextDescription() != null) {
+                descriptionBuilder.append(part.getTextDescription());
+                descriptionBuilder.append("\n");
+
+            }
+        }
+
+        // 최종 전체 해설을 문자열로 반환
+        return descriptionBuilder.toString();
+    }
+
+
+
 }
 
 
