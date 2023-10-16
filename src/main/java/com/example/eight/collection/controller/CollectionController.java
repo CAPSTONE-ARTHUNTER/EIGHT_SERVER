@@ -1,5 +1,6 @@
 package com.example.eight.collection.controller;
 
+import com.example.eight.collection.dto.CollectionResponseDto;
 import com.example.eight.collection.dto.OverviewResponseDto;
 import com.example.eight.collection.service.CollectionService;
 import com.example.eight.global.ResponseDto;
@@ -30,6 +31,20 @@ public class CollectionController {
 
         return ResponseEntity.ok(responseDto);
 
+    }
+
+    // 도감 조회 API
+    @GetMapping("")
+    public ResponseEntity<ResponseDto> getCollection(){
+        CollectionResponseDto collectionResponseDto = collectionService.getCollection();
+
+        ResponseDto responseDto = ResponseDto.builder()
+                .status("success")
+                .message("Get Collection successful")
+                .data(collectionResponseDto)
+                .build();
+
+        return ResponseEntity.ok(responseDto);
     }
 
 }
