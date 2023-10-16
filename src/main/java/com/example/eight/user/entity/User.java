@@ -91,5 +91,10 @@ public class User {
     public void updateRefreshToken(String updateRefreshToken) {
         this.refreshToken = updateRefreshToken;
     }
+
+    // exp 업데이트 메소드
+    public void updateExp(double exp){
+        this.exp = exp;
+    }
 }
 

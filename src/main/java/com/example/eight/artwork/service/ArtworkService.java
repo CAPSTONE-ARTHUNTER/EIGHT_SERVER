@@ -64,6 +64,7 @@ public class ArtworkService {
         Element element = elementRepository.findByName(elementName);
         if (element != null) {
             saveSolvedElement(loginUser, element);
+            userService.gainExp(loginUser, 0.25);   // 유저의 경험치(exp) 0.25 증가
 
             // 유저가 해당 part의 모든 element를 수집했다면 solvedPart 테이블에 기록
             Part part = element.getPart();
