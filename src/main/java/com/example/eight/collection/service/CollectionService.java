@@ -3,8 +3,7 @@ package com.example.eight.collection.service;
 import com.example.eight.artwork.entity.Relic;
 import com.example.eight.artwork.repository.RelicRepository;
 import com.example.eight.artwork.repository.SolvedRelicRepository;
-import com.example.eight.collection.dto.OverviewDto;
-import com.example.eight.collection.dto.OverviewResponseDto;
+import com.example.eight.collection.dto.*;
 import com.example.eight.user.entity.User;
 import com.example.eight.user.service.UserService;
 import lombok.RequiredArgsConstructor;
@@ -86,6 +85,35 @@ public class CollectionService {
         }
 
         return count;
+    }
+
+    // 도감 조회 API
+    public CollectionResponseDto getCollection(){
+        // 현재 로그인한 유저 정보
+        User user = userService.getAuthentication();
+
+        // 수집한 작품 리스트 가져오기
+        List<Relic> collectedRelicList = getCollectedRelicList(user.getId());
+
+        // 수집한 작품의 id와 작품 이미지 리스트 생성
+        List<CollectionDto> collectionDtoList = new ArrayList<>();
+        for(Relic relic: collectedRelicList){
+            CollectionDto collectionDto = CollectionDto.builder()
+                    .relicId(relic.getId())
+                    .relicImage(relic.getImage())
+                    .build();
+
+            collectionDtoList.add(collectionDto); // dto 리스트에 추가
+        }
+
+        // 도감 응답 생성
+        int totalRelicNum = (int) relicRepository.count();  // 모든 작품의 개수
+        CollectionResponseDto collectionResponseDto = CollectionResponseDto.builder()
+                .totalRelicNum(totalRelicNum)
+                .solvedRelicList(collectionDtoList)
+                .build();
+
+        return collectionResponseDto;
     }
 
 }
