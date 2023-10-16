@@ -97,4 +97,11 @@ public class UserService {
             throw new RuntimeException(e);
         }
     }
+
+    // 요소 수집시 경험치(exp) 증가시키는 메소드
+    public void gainExp(User user, double expToAdd){
+        double currentExp = user.getExp();
+        double updatedExp = currentExp + expToAdd;
+        user.updateExp(updatedExp);
+    }
 }

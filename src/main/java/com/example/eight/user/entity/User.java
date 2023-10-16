@@ -8,6 +8,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -33,8 +34,9 @@ public class User {
     @Column
     private String picture;
 
-    //@Column(nullable = false, columnDefinition = "DECIMAL(10.1) default 0.0 ")
-    @Column(columnDefinition = "DECIMAL(10.1) default 0.0 ")
+
+    @Column(nullable = false)
+    @ColumnDefault("0.0")
     private double exp;
 
     @CreationTimestamp  // INSERT시 시간 기록됨
@@ -88,6 +90,11 @@ public class User {
     // refresh 토큰 업데이트 메소드
     public void updateRefreshToken(String updateRefreshToken) {
         this.refreshToken = updateRefreshToken;
+    }
+
+    // exp 업데이트 메소드
+    public void updateExp(double exp){
+        this.exp = exp;
     }
 }
 
