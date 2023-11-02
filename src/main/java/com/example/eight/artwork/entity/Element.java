@@ -27,6 +27,9 @@ public class Element implements Serializable {
     @Column(name = "name", length = 30)
     private String name;
 
+    @Column(name = "name_kr", length = 30)
+    private String nameKr;
+
     @Column(name = "image", length = 300)
     private String image;
 
