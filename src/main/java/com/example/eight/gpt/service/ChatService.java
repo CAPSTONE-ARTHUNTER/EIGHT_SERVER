@@ -36,20 +36,18 @@ public class ChatService {
     @Transactional
     public String getRelicDescriptionForElement(Element element) {
         if (element == null) {
-            // element 객체가 null인 경우 처리, 여기서는 예외 메시지를 반환
             return "Element not found.";
         }
 
         // 요소가 속한 부분 및 작품 정보 가져오기
         Relic relic = element.getPart().getRelic();
-
         Long relicId = relic.getId();
 
         // 작품의 전체 해설 가져오기
         return artworkService.getRelicDescription(relicId);
     }
 
-    // STEP3: 요소 이름으로 국문명(nameKr) 찾기
+    // STEP3: 요소 영문명으로 국문명 찾기
     public String findElementNameKr(String elementName) {
         Element element = findElementByName(elementName);
         if (element != null) {
@@ -63,7 +61,6 @@ public class ChatService {
         String prompt = "작품 전체 해설을 줄테니까 이 안에서 " + nameKr + " 정보 찾아줘. 이게 전체 해설이야:\n" + relicDescription;
         return chatgptService.sendMessage(prompt);
     }
-
 
     // STEP5: GPT 응답 반환
     public String getElementInfo(String elementName) {
