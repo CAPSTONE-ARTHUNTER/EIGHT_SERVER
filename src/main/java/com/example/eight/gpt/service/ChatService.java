@@ -12,8 +12,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
-
 @Service
 @RequiredArgsConstructor
 public class ChatService {
@@ -37,36 +35,46 @@ public class ChatService {
     // STEP2: 요소가 속한 작품 찾아서 작품의 전체 해설 가져오기
     @Transactional
     public String getRelicDescriptionForElement(Element element) {
-        // 요소가 속한 Part 및 Relic 정보 가져오기
-        Relic relic = element.getPart().getRelic();
-
-        Long relicId = relic.getId();
-        return artworkService.getRelicDescription(relicId);
-    }
-
-    // STEP3: 요소 이름과 작품 해설을 사용하여 GPT에 정보 요청
-    public String generateDescription(String name, String relicDescription) {
-        String prompt = name +
-                "부분에 대한 정보를 알고 싶어. 작품 전체 해설을 줄테니까 정보 알려줘. 이게 전체 해설이야:"
-                + relicDescription ;
-        return chatgptService.sendMessage(prompt);
-    }
-
-    // STEP4: GPT 응답 반환
-    public String getElementInfo(String elementName) {
-        Element element = findElementByName(elementName);
-
-        // 요소가 존재하지 않을 시
         if (element == null) {
+            // element 객체가 null인 경우 처리, 여기서는 예외 메시지를 반환
             return "Element not found.";
         }
 
-        String relicDescription = getRelicDescriptionForElement(element);
-        String description = generateDescription(elementName, relicDescription);
+        // 요소가 속한 부분 및 작품 정보 가져오기
+        Relic relic = element.getPart().getRelic();
 
-        logger.info("Received GPT response: {}", description);
+        Long relicId = relic.getId();
 
-        return description;
+        // 작품의 전체 해설 가져오기
+        return artworkService.getRelicDescription(relicId);
+    }
+
+    // STEP3: 요소 이름으로 국문명(nameKr) 찾기
+    public String findElementNameKr(String elementName) {
+        Element element = findElementByName(elementName);
+        if (element != null) {
+            return element.getNameKr();
+        }
+        return null; // 요소를 찾지 못한 경우
+    }
+
+    // STEP4: 요소 이름과 작품 해설을 사용하여 GPT에 정보 요청
+    public String generateDescription(String nameKr, String relicDescription) {
+        String prompt = "작품 전체 해설을 줄테니까 이 안에서 " + nameKr + " 정보 찾아줘. 이게 전체 해설이야:\n" + relicDescription;
+        return chatgptService.sendMessage(prompt);
+    }
+
+
+    // STEP5: GPT 응답 반환
+    public String getElementInfo(String elementName) {
+        String nameKr = findElementNameKr(elementName);
+
+        if (nameKr != null) {
+            String relicDescription = getRelicDescriptionForElement(findElementByName(nameKr));
+            return generateDescription(nameKr, relicDescription);
+        }
+
+        return "Element not found.";
     }
 
 }
