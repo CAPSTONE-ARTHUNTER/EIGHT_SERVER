@@ -6,13 +6,13 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 public class GptResponseDto {
-    private String answer;
+    private String ElementDescription;
 
-    public GptResponseDto(String answer) {
-        this.answer = answer;
+    public GptResponseDto(String ElementDescription) {
+        this.ElementDescription = ElementDescription;
     }
 
-    public String getAnswer() {
-        return answer;
+    public String getElementDescription() {
+        return ElementDescription;
     }
 }
