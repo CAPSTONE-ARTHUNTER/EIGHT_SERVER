@@ -1,5 +1,6 @@
 package com.example.eight.collection.controller;
 
+import com.example.eight.collection.dto.ChallengeResponseDto;
 import com.example.eight.collection.dto.CollectionResponseDto;
 import com.example.eight.collection.dto.OverviewResponseDto;
 import com.example.eight.collection.service.CollectionService;
@@ -45,6 +46,14 @@ public class CollectionController {
                 .build();
 
         return ResponseEntity.ok(responseDto);
+    }
+
+    // 도감 도전과제 조회 API
+    @GetMapping("/challenge")
+    public ResponseEntity<ChallengeResponseDto> getChallenge(){
+        ChallengeResponseDto challengeResponseDto = collectionService.getChallengeList();
+
+        return ResponseEntity.ok(challengeResponseDto);
     }
 
 }
