@@ -3,7 +3,6 @@ package com.example.eight.gpt.service;
 import com.example.eight.artwork.entity.Relic;
 import com.example.eight.artwork.entity.Element;
 import com.example.eight.artwork.repository.ElementRepository;
-import com.example.eight.artwork.repository.RelicRepository;
 import com.example.eight.artwork.service.ArtworkService;
 import io.github.flashvayne.chatgpt.service.ChatgptService;
 import org.slf4j.Logger;
@@ -16,7 +15,6 @@ import org.springframework.transaction.annotation.Transactional;
 @RequiredArgsConstructor
 public class ChatService {
 
-    private final RelicRepository relicRepository;
     private final ElementRepository elementRepository;
     private final ArtworkService artworkService;
     private final ChatgptService chatgptService;
@@ -35,6 +33,9 @@ public class ChatService {
     // STEP2: 요소가 속한 작품 찾아서 작품의 전체 해설 가져오기
     @Transactional
     public String getRelicDescriptionForElement(Element element) {
+
+        logger.info("getRelicDescriptionForElement에서 받은 element: {}", element);
+
         if (element == null) {
             return "Element not found.";
         }
@@ -58,7 +59,8 @@ public class ChatService {
 
     // STEP4: 요소 이름과 작품 해설을 사용하여 GPT에 정보 요청
     public String generateDescription(String nameKr, String relicDescription) {
-        String prompt = "작품 전체 해설을 줄테니까 이 안에서 " + nameKr + " 정보 찾아줘. 이게 전체 해설이야:\n" + relicDescription;
+        String prompt = "작품 전체 해설을 줄테니까 이 안에서 " + nameKr + " 정보 찾아줘."
+        + "이게 전체 해설이야: \n" + relicDescription;
         return chatgptService.sendMessage(prompt);
     }
 
@@ -67,7 +69,7 @@ public class ChatService {
         String nameKr = findElementNameKr(elementName);
 
         if (nameKr != null) {
-            String relicDescription = getRelicDescriptionForElement(findElementByName(nameKr));
+            String relicDescription = getRelicDescriptionForElement(findElementByName(elementName));
             return generateDescription(nameKr, relicDescription);
         }
 
