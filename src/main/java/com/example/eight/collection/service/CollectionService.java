@@ -1,8 +1,13 @@
 package com.example.eight.collection.service;
 
+import com.example.eight.artwork.dto.PartInfoDto;
+import com.example.eight.artwork.entity.Part;
 import com.example.eight.artwork.entity.Relic;
+import com.example.eight.artwork.repository.PartRepository;
 import com.example.eight.artwork.repository.RelicRepository;
+import com.example.eight.artwork.repository.SolvedPartRepository;
 import com.example.eight.artwork.repository.SolvedRelicRepository;
+import com.example.eight.artwork.service.ArtworkService;
 import com.example.eight.collection.dto.*;
 import com.example.eight.user.entity.User;
 import com.example.eight.user.service.UserService;
@@ -21,6 +26,9 @@ public class CollectionService {
     private final UserService userService;
     private final RelicRepository relicRepository;
     private final SolvedRelicRepository solvedRelicRepository;
+    private final PartRepository partRepository;
+    private final SolvedPartRepository solvedPartRepository;
+    private final ArtworkService artworkService;
 
     // 수집 오버뷰 조회 API
     public OverviewResponseDto getOverview(){
@@ -116,4 +124,61 @@ public class CollectionService {
         return collectionResponseDto;
     }
 
+    // 챌린지 조회 API
+    public ChallengeResponseDto getChallengeList() {
+        // 현재 로그인한 유저 정보
+        User user = userService.getAuthentication();
+
+        // 전체 작품 리스트 가져오기
+        List<Relic> RelicList = relicRepository.findAll();
+        // 각 작품의 정보, partList, 수집여부 가져오기
+        List<ChallengeDto> challengeDtoList = new ArrayList<>();
+        for (Relic relic : RelicList) {
+            Long relicId = relic.getId();
+            Long userId = user.getId();
+
+            int solvedPartNum = artworkService.getSolvedPartNum(userId, relicId);
+            List<PartInfoDto> partList = getPartList(userId, relicId);  // part의 목록과 정보, 수집여부 가져오기
+
+            ChallengeDto challengeDto = ChallengeDto.builder()
+                    .relicId(relicId)
+                    .relicName(artworkService.getRelicInfoByAPI(relicId, "nameKr"))
+                    .badgeImage(relic.getBadgeImage())
+                    .partNum(relic.getPartNum())
+                    .solvedPartNum(solvedPartNum)
+                    .partList(partList)
+                    .build();
+
+            challengeDtoList.add(challengeDto); // dto 리스트에 추가
+        }
+
+        // 챌린지 조희 응답 생성
+        ChallengeResponseDto challengeResponseDto = ChallengeResponseDto.builder()
+                .challengeList(challengeDtoList)
+                .build();
+
+        return challengeResponseDto;
+    }
+
+    // part List 가져오기
+    public List<PartInfoDto> getPartList(Long userId, Long relicId){
+        // relic Id로 부분 찾기
+        List<Part> parts = partRepository.findByRelicId(relicId);
+        List<PartInfoDto> partInfoDtoList = new ArrayList<>();
+
+        // 각 부분의 세부 정보
+        for (Part part : parts) {
+            boolean part_isSolved = solvedPartRepository.existsByUserIdAndPartId(userId, part.getId());
+
+            PartInfoDto partInfoDto = PartInfoDto.builder()
+                    .partId(part.getId())
+                    .name(part.getName())
+                    .isSolved(part_isSolved)  // 부분 수집여부
+                    .build();
+
+            partInfoDtoList.add(partInfoDto);  // dto 리스트에 추가
+        }
+
+        return partInfoDtoList;
+    }
 }
