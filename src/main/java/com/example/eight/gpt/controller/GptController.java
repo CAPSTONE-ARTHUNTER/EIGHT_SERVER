@@ -15,8 +15,7 @@ public class GptController {
 
     @PostMapping("/elementsinfo")
     public ResponseEntity<GptResponseDto> getElementInfo(@RequestBody GptRequestDto requestDto) {
-        String elementName = chatService.getElementInfo(requestDto.getName());
-        GptResponseDto response = new GptResponseDto(elementName);
+        GptResponseDto response = chatService.getElementInfo(requestDto.getName());
         return ResponseEntity.ok(response);
     }
 }
