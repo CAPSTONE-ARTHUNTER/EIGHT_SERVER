@@ -372,7 +372,7 @@ public class ArtworkService {
     }
 
     // 유저가 수집완료한 부분 수 가져오는 메소드
-    private int getSolvedPartNum(Long userId, Long relicId) {
+    public int getSolvedPartNum(Long userId, Long relicId) {
         // 작품 찾기
         Relic relic = findRelic(relicId);
         // 작품의 모든 부분 list
