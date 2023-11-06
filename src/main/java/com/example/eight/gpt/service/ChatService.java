@@ -1,9 +1,11 @@
 package com.example.eight.gpt.service;
 
+import com.example.eight.artwork.entity.Part;
 import com.example.eight.artwork.entity.Relic;
 import com.example.eight.artwork.entity.Element;
 import com.example.eight.artwork.repository.ElementRepository;
 import com.example.eight.artwork.service.ArtworkService;
+import com.example.eight.gpt.dto.GptResponseDto;
 import io.github.flashvayne.chatgpt.service.ChatgptService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,7 +20,6 @@ public class ChatService {
     private final ElementRepository elementRepository;
     private final ArtworkService artworkService;
     private final ChatgptService chatgptService;
-    private String answer;
 
     // 로그 확인
     private static final Logger logger = LoggerFactory.getLogger(ChatService.class);
@@ -57,23 +58,34 @@ public class ChatService {
         return null; // 요소를 찾지 못한 경우
     }
 
-    // STEP4: 요소 이름과 작품 해설을 사용하여 GPT에 정보 요청
-    public String generateDescription(String nameKr, String relicDescription) {
-        String prompt = "작품 전체 해설을 줄테니까 이 안에서 " + nameKr + " 정보 찾아줘."
-        + "이게 전체 해설이야: \n" + relicDescription;
-        return chatgptService.sendMessage(prompt);
+    // STEP4: 요소 이름과 작품 해설을 사용하여 GPT에 정보 요청 + 작품 정보 찾아와 응답 객체 만들기
+    public GptResponseDto generateDescription(String nameKr, String relicDescription) {
+
+        String prompt = "작품 전체해설에서 " + nameKr + " 정보 찾아줘."
+                + "전체해설:\n" + relicDescription;
+        String elementDescription = chatgptService.sendMessage(prompt);
+
+        // 작품 정보 불러오기
+        Element element = elementRepository.findByNameKr(nameKr);
+        String elementImage = element.getImage();
+        Relic relic = element.getPart().getRelic();
+        Long relicId = relic.getId();
+        String relicName = relic.getNameEn();
+
+        // 응답 객체 반환
+        return new GptResponseDto(relicId, relicName, "hi", nameKr, elementDescription);
     }
 
     // STEP5: GPT 응답 반환
-    public String getElementInfo(String elementName) {
+    public GptResponseDto getElementInfo(String elementName) {
         String nameKr = findElementNameKr(elementName);
 
         if (nameKr != null) {
+            // GPT 요청 보내기
             String relicDescription = getRelicDescriptionForElement(findElementByName(elementName));
             return generateDescription(nameKr, relicDescription);
         }
-
-        return "Element not found.";
+        return new GptResponseDto(null, null, null, null, "Error: Element not found.");
     }
 
 }
