@@ -11,6 +11,9 @@ import java.util.List;
 public interface ElementRepository extends JpaRepository<Element, Long> {
     Element findByName(String name);
 
+    Element findByNameKr(String name);
+
+
     // 부분에 속하는 element 리스트 조회
     List<Element> findByPart(Part part);    
 
