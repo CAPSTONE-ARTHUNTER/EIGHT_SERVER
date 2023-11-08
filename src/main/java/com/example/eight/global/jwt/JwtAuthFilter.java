@@ -10,12 +10,14 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import lombok.extern.slf4j.Slf4j;
@@ -34,6 +36,7 @@ import java.util.Optional;
 public class JwtAuthFilter extends OncePerRequestFilter {
     private final JwtService jwtService;
     private final UserRepository userRepository;
+    private final RedisTemplate redisTemplate;
 
     //OncePerRequestFilter의 doFilterInternal()를 Override
     @Override
@@ -52,13 +55,23 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             else {
                 log.info("\"" + requestURI + "\" 이므로 -- access 토큰을 검증합니다 --");
                 Optional<String> accessToken = jwtService.getToken(request, "accessToken"); // request 헤더에서 access 토큰 가져오기
+                String accessTokenString = accessToken.get();
 
                 // accessToken이 유효한 경우 Authenticate객체 생성
                 if (accessToken.isPresent() && jwtService.validateToken(accessToken.get())) {
-                    String userEmail = jwtService.getClaim(accessToken.get()).orElse(null); // 토큰에서 claim 추출
+
+                    // 로그아웃된 토큰이면 403 응답 (Redis에 블랙리스트로 저장되었는지 확인)
+                    String isLogout =  (String) redisTemplate.opsForValue().get(accessTokenString);
+                    if(!ObjectUtils.isEmpty(isLogout)){
+                        response.setStatus(403);
+                        response.getWriter().write("Logged out access token");
+                        return;
+                    }
+
+                    String userEmail = jwtService.getClaim(accessTokenString).orElse(null); // 토큰에서 claim 추출
                     if (userEmail != null) {
                         Optional<User> userOptional = userRepository.findByEmail(userEmail);
-                        userOptional.ifPresent(user -> authenticateUser(user, accessToken.get()));  // claim으로 유저 찾아 Authentication 객체를 SecurityContextHodler에 저장
+                        userOptional.ifPresent(user -> authenticateUser(user, accessTokenString));  // claim으로 유저 찾아 Authentication 객체를 SecurityContextHodler에 저장
                     }
                 }
             }
