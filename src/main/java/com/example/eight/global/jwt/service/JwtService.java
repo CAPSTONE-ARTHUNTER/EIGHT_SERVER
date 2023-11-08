@@ -204,4 +204,18 @@ public class JwtService {
         return ResponseEntity.status(status).body(responseDto);
     }
 
+
+    // AccessToken에서 expiresTime 추출하는 메소드
+    public Optional<Long> getExpiresTime(String accessToken) {
+        try {
+            DecodedJWT decodedJWT = (JWT.require(Algorithm.HMAC512(secretKey)).build().verify(accessToken));
+            // 만료시간 리턴 (현재시간 차감 후 남은 만료시간)
+            Long expiresTime = decodedJWT.getExpiresAt().getTime();
+            Long now = new Date().getTime();    // 현재 시간
+            return Optional.ofNullable(expiresTime - now);  // 기본 만료시간은 1시간 (3600초)
+        } catch (Exception e) {
+            log.error("expiresTime 추출 오류: {}", e);
+            return Optional.empty();
+        }
+    }
 }
