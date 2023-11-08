@@ -1,7 +1,7 @@
 package com.example.eight.global.jwt.controller;
 
-import com.example.eight.global.jwt.service.JwtService;
 import com.example.eight.global.ResponseDto;
+import com.example.eight.global.jwt.service.JwtService;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
@@ -27,5 +28,15 @@ public class JwtController {
     public ResponseEntity<ResponseDto> validateRefreshToken(@RequestBody HashMap<String, String> bodyJson, HttpServletResponse response) throws IOException {
 
         return jwtService.validateRefreshToken(bodyJson, response);
+    }
+
+    @Transactional
+    @PostMapping("/app/auth/logout")
+    public ResponseEntity<ResponseDto> logout(@RequestHeader("Authorization") String accessToken){
+        if(accessToken != null && accessToken.startsWith("Bearer ")){
+            accessToken = accessToken.substring(7); // 헤더에서 Bearer 삭제
+        }
+
+        return jwtService.logout(accessToken);
     }
 }
