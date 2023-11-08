@@ -32,6 +32,7 @@ jobs:
       DATABASE_PASSWORD: ${{secrets.DATABASE_PASSWORD}}
       DATABASE_URL: ${{secrets.DATABASE_URL}}
       SERVICE_KEY: ${{secrets.SERVICE_KEY}}
+      REDIS_HOST: ${{secrets.REDIS_HOST}}
 
     steps:
       - uses: actions/checkout@v2
