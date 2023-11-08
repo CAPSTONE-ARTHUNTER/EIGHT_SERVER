@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 @Setter         //테스트코드에서 사용하기 위해 추가
 @Service
@@ -51,6 +53,7 @@ public class JwtService {
     @Value("${jwt.refresh.header}")
     private String refreshHeader;   // Authorization-refresh
 
+    private final RedisTemplate redisTemplate;
 
     /*
      AccessToken 생성
@@ -204,6 +207,32 @@ public class JwtService {
         return ResponseEntity.status(status).body(responseDto);
     }
 
+    // 로그아웃 메소드
+    public ResponseEntity<ResponseDto> logout(String accessToken){
+        try {
+            // accessToken의 유효시간 추출해서, 해당 시간동안 Redis에 블랙리스트로 저장
+            Long expiration = getExpiresTime(accessToken).get();
+            redisTemplate.opsForValue().set(accessToken, "logout", expiration, TimeUnit.MILLISECONDS);
+
+            // 200 응답
+            ResponseDto responseDto = ResponseDto.builder()
+                    .status("success")
+                    .message("Logout successful")
+                    .data(null)
+                    .build();
+
+            return ResponseEntity.ok(responseDto);
+        }
+        // accessToken 만료된 경우 401 응답
+        catch (TokenExpiredException e) {
+            return createResponseEntity(HttpStatus.UNAUTHORIZED, "Expired access Token", null);
+        }
+        // 그 외 401 응답
+        catch (Exception e) {
+            log.error(e.getMessage());
+            return createResponseEntity(HttpStatus.UNAUTHORIZED, "Access Token is Invalid", null);
+        }
+    }
 
     // AccessToken에서 expiresTime 추출하는 메소드
     public Optional<Long> getExpiresTime(String accessToken) {
