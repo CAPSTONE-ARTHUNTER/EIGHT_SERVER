@@ -73,7 +73,7 @@ public class ChatService {
         String relicName = relic.getNameEn();
 
         // 응답 객체 반환
-        return new GptResponseDto(relicId, relicName, "hi", nameKr, elementDescription);
+        return new GptResponseDto(relicId, relicName, elementImage, nameKr, elementDescription);
     }
 
     // STEP5: GPT 응답 반환
