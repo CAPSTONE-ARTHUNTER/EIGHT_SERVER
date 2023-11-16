@@ -62,7 +62,7 @@ public class ChatService {
     public GptResponseDto generateDescription(String nameKr, String relicDescription) {
 
         String prompt = "작품 전체해설에서 " + nameKr + " 정보 찾아줘."
-                + "전체해설:\n" + relicDescription;
+                + "\n전체해설:" + relicDescription;
         String elementDescription = chatgptService.sendMessage(prompt);
 
         // 작품 정보 불러오기
@@ -70,7 +70,7 @@ public class ChatService {
         String elementImage = element.getImage();
         Relic relic = element.getPart().getRelic();
         Long relicId = relic.getId();
-        String relicName = relic.getNameEn();
+        String relicName = artworkService.getRelicInfoByAPI(relicId,"nameKr");
 
         // 응답 객체 반환
         return new GptResponseDto(relicId, relicName, elementImage, nameKr, elementDescription);
