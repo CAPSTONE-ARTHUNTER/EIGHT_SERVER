@@ -46,7 +46,7 @@ public class ChatService {
         Long relicId = relic.getId();
 
         // 작품의 전체 해설 가져오기
-        return artworkService.getRelicDescription(relicId);
+        return element.getPart().getTextDescription();
     }
 
     // STEP3: 요소 영문명으로 국문명 찾기
@@ -61,8 +61,8 @@ public class ChatService {
     // STEP4: 요소 이름과 작품 해설을 사용하여 GPT에 정보 요청 + 작품 정보 찾아와 응답 객체 만들기
     public GptResponseDto generateDescription(String nameKr, String relicDescription) {
 
-        String prompt = "작품 전체해설에서 " + nameKr + " 정보 찾아줘."
-                + "\n전체해설:" + relicDescription;
+        String prompt = "작품해설에서 '" + nameKr + "' 정보 찾아줘."
+                + "\n작품해설:" + relicDescription;
         String elementDescription = chatgptService.sendMessage(prompt);
 
         // 작품 정보 불러오기
