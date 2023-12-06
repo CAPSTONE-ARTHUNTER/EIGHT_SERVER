@@ -1,9 +1,7 @@
 package com.example.eight.artwork.dto;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.*;
 
 import java.util.List;
 
@@ -12,21 +10,9 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class DetectionRequestDto {
-    private double time;
-    private ImageInfo image;
-    private List<Prediction> predictions;
+    private String name;
 
-    public static class ImageInfo {
-        private int width;
-        private int height;
-    }
-
-    public static class Prediction {
-        private double x;
-        private double y;
-        private double width;
-        private double height;
-        private double confidence;
-        private String className;
-    }
+    //public DetectionResponseDto.DetectionData getData() {
+    //    return DetectionResponseDto.DetectionData.createFromRequest(this);
+    //}
 }

@@ -20,7 +20,7 @@ public class Part implements Serializable {
     @Column(name = "id")
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "relic_id", nullable = false)
     private Relic relic;
 
@@ -29,7 +29,7 @@ public class Part implements Serializable {
     private String name;
 
     @NotNull
-    @Column(name = "text_description", length = 500)
+    @Column(name = "text_description", length = 3000)
     private String textDescription;
 
     @Lob

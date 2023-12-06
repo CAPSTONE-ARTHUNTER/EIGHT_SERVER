@@ -19,7 +19,7 @@ public class Element implements Serializable {
     @Column(name = "id")
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "part_id", nullable = false)
     private Part part;
 
@@ -27,18 +27,21 @@ public class Element implements Serializable {
     @Column(name = "name", length = 30)
     private String name;
 
+    @Column(name = "name_kr", length = 30)
+    private String nameKr;
+
     @Column(name = "image", length = 300)
     private String image;
 
-    @Embedded
-    private Point2D point;
+    @Column(name = "point", length = 100)  // "x:10, y:20"
+    private String point;
 
     @Lob
     @Column(name = "audio_description")
     private byte[] audioDescription;
 
     @Builder
-    public Element(Part part, @NotNull String name, String image, Point2D point, byte[] audioDescription) {
+    public Element(Part part, @NotNull String name, String image, String point, byte[] audioDescription) {
         this.part = part;
         this.name = name;
         this.image = image;

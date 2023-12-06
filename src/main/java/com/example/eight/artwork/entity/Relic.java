@@ -3,7 +3,6 @@ package com.example.eight.artwork.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.antlr.v4.runtime.misc.NotNull;
-import org.springframework.data.annotation.Id;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -21,11 +20,10 @@ public class Relic {
     private Long id;
 
     @Column(name = "api_id")
-    private Long apiId;
+    private String apiId;
 
-    @NotNull
-    @Column(name = "name", length = 30)
-    private String name;
+    @Column(name = "name_eng")
+    private String nameEn;
 
     @NotNull
     @Column(name = "image", length = 300)
@@ -46,10 +44,10 @@ public class Relic {
     private List<Part> parts = new ArrayList<>();
 
     @Builder
-    public Relic(Long apiId, @NotNull String name, @NotNull String image, @NotNull String badgeImage,
+    public Relic(String apiId, String nameEn, @NotNull String image, @NotNull String badgeImage,
                  String location, @NotNull Integer partNum, List<Part> parts) {
         this.apiId = apiId;
-        this.name = name;
+        this.nameEn = nameEn;
         this.image = image;
         this.badgeImage = badgeImage;
         this.location = location;

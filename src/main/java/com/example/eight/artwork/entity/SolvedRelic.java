@@ -1,5 +1,6 @@
 package com.example.eight.artwork.entity;
 
+import com.example.eight.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -22,27 +23,21 @@ public class SolvedRelic implements Serializable {
     @JoinColumn(name = "relic_id", nullable = false)
     private Relic relic;
 
-    @Column(name = "is_solved", nullable = false)
-    private boolean isSolved;
-
-    @Column(name = "solved_part_num", nullable = false)
-    private int solvedPartNum;
-
-    // TODO: user 엔티티 생성 후 주석 해제
-    // @ManyToOne(fetch = FetchType.LAZY)
-    // @JoinColumn(name = "user_id", nullable = false)
-    // private User user;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    private User user;
 
     @Column(name = "solved_at")
     private LocalDateTime solvedAt;
 
-    // TODO: user 엔티티 생성 후 추가
     @Builder
-    public SolvedRelic(Relic relic, boolean isSolved, int solvedPartNum, LocalDateTime solvedAt) {
+    public SolvedRelic(Relic relic, User user, LocalDateTime solvedAt) {
         this.relic = relic;
-        this.isSolved = isSolved;
-        this.solvedPartNum = solvedPartNum;
-        //this.user = user;
+        this.user = user;
+        this.solvedAt = solvedAt;
+    }
+
+    public void updateSolvedAt(LocalDateTime solvedAt){
         this.solvedAt = solvedAt;
     }
 

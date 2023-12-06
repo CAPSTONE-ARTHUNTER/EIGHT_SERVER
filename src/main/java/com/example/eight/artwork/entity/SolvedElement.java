@@ -1,5 +1,6 @@
 package com.example.eight.artwork.entity;
 
+import com.example.eight.user.entity.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -22,23 +23,21 @@ public class SolvedElement implements Serializable {
     @JoinColumn(name = "element_id", nullable = false)
     private Element element;
 
-    @Column(name = "is_solved", nullable = false)
-    private boolean isSolved;
-
-    // TODO: user 엔티티 생성 후 주석 해제
-    // @ManyToOne(fetch = FetchType.LAZY)
-    // @JoinColumn(name = "user_id", nullable = false)
-    // private User user;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    private User user;
 
     @Column(name = "solved_at")
     private LocalDateTime solvedAt;
 
-    // TODO: user 엔티티 생성 후 추가
     @Builder
-    public SolvedElement(Element element, boolean isSolved, LocalDateTime solvedAt) {
+    public SolvedElement(Element element, User user, LocalDateTime solvedAt) {
         this.element = element;
-        this.isSolved = isSolved;
-        // this.user = user;
+        this.user = user;
+        this.solvedAt = solvedAt;
+    }
+
+    public void updateSolvedAt(LocalDateTime solvedAt){
         this.solvedAt = solvedAt;
     }
 
