@@ -204,9 +204,9 @@ java -jar eight-0.0.1-SNAPSHOT.jar
 ## Project Management
 
  - GitHub Project
-   - ⭐ [FrontEnd](https://github.com/orgs/CAPSTON-EIGHT/projects/1)
-    - 🌙 [BackEnd](https://github.com/orgs/CAPSTON-EIGHT/projects/2)
- - [GitHub Issues](https://github.com/CAPSTON-EIGHT/EIGHT_SERVER/pulls)
+   - ⭐ [FrontEnd](https://github.com/orgs/CAPSTONE-ARTHUNTER/projects/1)
+    - 🌙 [BackEnd](https://github.com/orgs/CAPSTONE-ARTHUNTER/projects/2)
+ - [GitHub Issues](https://github.com/CAPSTONE-ARTHUNTER/EIGHT_SERVER/pulls)
 <br>
 
 ## Project Documents & Links
