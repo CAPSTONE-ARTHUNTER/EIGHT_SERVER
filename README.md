@@ -163,7 +163,7 @@ Infra Management: <img src="https://img.shields.io/badge/AWS Lambda-FF9900?style
 
 **1. 프로젝트 클론**
 ```
-git clone https://github.com/CAPSTON-EIGHT/EIGHT_SERVER.git
+git clone https://github.com/CAPSTONE-ARTHUNTER/EIGHT_SERVER.git
 cd EIGHT_SERVER
 ```
 **2. .env 파일 추가**
