@@ -206,7 +206,7 @@ java -jar eight-0.0.1-SNAPSHOT.jar
  - GitHub Project
    - ⭐ [FrontEnd](https://github.com/orgs/CAPSTONE-ARTHUNTER/projects/1)
     - 🌙 [BackEnd](https://github.com/orgs/CAPSTONE-ARTHUNTER/projects/2)
- - [GitHub Issues](https://github.com/CAPSTONE-ARTHUNTER/EIGHT_SERVER/pulls)
+ - [GitHub Issues](https://github.com/CAPSTONE-ARTHUNTER/EIGHT_SERVER/issues)
 <br>
 
 ## Project Documents & Links
